@@ -1,120 +1,100 @@
-constexpr int PORT_NUM = 4000;
-constexpr int BUF_SIZE = 200;
-constexpr int NAME_SIZE = 20;
-constexpr int CHAT_SIZE = 100;
+#pragma once
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
 
-constexpr int MAX_USER = 10000;
-constexpr int MAX_NPC = 200000;
+#define MAX_BUFF_SIZE   4000
+#define MAX_PACKET_SIZE  255
 
-constexpr int W_WIDTH = 2000;
-constexpr int W_HEIGHT = 2000;
+#define BOARD_WIDTH   200
+#define BOARD_HEIGHT  200
 
-// Packet ID
-constexpr char CS_LOGIN = 0;
-constexpr char CS_MOVE = 1;
-constexpr char CS_CHAT = 2;
-constexpr char CS_ATTACK = 3;			// 4 방향 공격
-constexpr char CS_TELEPORT = 4;			// RANDOM한 위치로 Teleport, Stress Test할 때 Hot Spot현상을 피하기 위해 구현
-constexpr char CS_LOGOUT = 5;			// 클라이언트에서 정상적으로 접속을 종료하는 패킷
+#define VIEW_RADIUS  3
+#define VIEW_RANGE   4
 
-constexpr char SC_LOGIN_INFO = 2;
-constexpr char SC_ADD_OBJECT = 3;
-constexpr char SC_REMOVE_OBJECT = 4;
-constexpr char SC_MOVE_OBJECT = 5;
-constexpr char SC_CHAT = 6;
-constexpr char SC_LOGIN_OK = 7;
-constexpr char SC_LOGIN_FAIL = 8;
-constexpr char SC_STAT_CHANGE = 9;
+#define MAX_USER 2000
+
+#define NPC_START  2000
+#define NUM_OF_NPC  20000
+
+#define MY_SERVER_PORT  4000
+
+#define MAX_STR_SIZE  100
+
+#define CS_UP    1
+#define CS_DOWN  2
+#define CS_LEFT  3
+#define CS_RIGHT    4
+#define CS_CHAT		5
+
+#define SC_POS           1
+#define SC_PUT_PLAYER    2
+#define SC_REMOVE_PLAYER 3
+#define SC_CHAT			 4
+#define SC_LOGIN_INFO	 5
 
 #pragma pack (push, 1)
-struct CS_LOGIN_PACKET {
-	unsigned char size;
-	char	type;
-	char	name[NAME_SIZE];
+
+struct cs_packet_up {
+	BYTE size;
+	BYTE type;
 };
 
-struct CS_MOVE_PACKET {
-	unsigned char size;
-	char	type;
-	char	direction;  // 0 : UP, 1 : DOWN, 2 : LEFT, 3 : RIGHT
-	unsigned	move_time;
+struct cs_packet_down {
+	BYTE size;
+	BYTE type;
 };
 
-struct CS_CHAT_PACKET {
-	unsigned char size;
-	char	type;
-	char	mess[CHAT_SIZE];
+struct cs_packet_left {
+	BYTE size;
+	BYTE type;
 };
 
-struct CS_TELEPORT_PACKET {
-	unsigned char size;
-	char	type;
+struct cs_packet_right {
+	BYTE size;
+	BYTE type;
 };
 
-struct CS_LOGOUT_PACKET {
-	unsigned char size;
-	char	type;
+struct cs_packet_chat {
+	BYTE size;
+	BYTE type;
+	WCHAR message[MAX_STR_SIZE];
 };
 
-struct SC_LOGIN_INFO_PACKET {
-	unsigned char size;
-	char	type;
-	int		id;
-	int		hp;
-	int		max_hp;
-	int		exp;
-	int		level;
-	short	x, y;
+struct sc_packet_pos {
+	BYTE size;
+	BYTE type;
+	WORD id;
+	WORD x;
+	WORD y;
 };
 
-struct SC_ADD_OBJECT_PACKET {
-	unsigned char size;
-	char	type;
-	int		id;
-	short	x, y;
-	char	name[NAME_SIZE];
+struct sc_packet_put_player {
+	BYTE size;
+	BYTE type;
+	WORD id;
+	WORD x;
+	WORD y;
 };
 
-struct SC_REMOVE_OBJECT_PACKET {
-	unsigned char size;
-	char	type;
-	int		id;
+struct sc_packet_login_info {
+	BYTE size;
+	BYTE type;
+	WORD id;
+	WORD x;
+	WORD y;
 };
 
-struct SC_MOVE_OBJECT_PACKET {
-	unsigned char size;
-	char	type;
-	int		id;
-	short	x, y;
-	unsigned int move_time;
+struct sc_packet_remove_player {
+	BYTE size;
+	BYTE type;
+	WORD id;
 };
 
-struct SC_CHAT_PACKET {
-	unsigned char size;
-	char	type;
-	int		id;
-	char	mess[CHAT_SIZE];
-};
-
-struct SC_LOGIN_OK_PACKET {
-	unsigned char size;
-	char	type;
-};
-
-struct SC_LOGIN_FAIL_PACKET {
-	unsigned char size;
-	char	type;
-
-};
-
-struct SC_STAT_CHANGEL_PACKET {
-	unsigned char size;
-	char	type;
-	int		hp;
-	int		max_hp;
-	int		exp;
-	int		level;
-
+struct sc_packet_chat {
+	BYTE size;
+	BYTE type;
+	WORD id;
+	char message[MAX_STR_SIZE];
 };
 
 #pragma pack (pop)
