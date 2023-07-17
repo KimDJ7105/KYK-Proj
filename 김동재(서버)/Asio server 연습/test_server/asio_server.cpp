@@ -1,6 +1,9 @@
 //------------------------
 // 0. 뷰리스트 구현 <- 완료
 // 1. 주기적으로 이동하는 NPC 생성
+//    1-1. NPC class 구현 - 완료
+//    1-2. NPC 화면에 그리기
+//    1-3. NPC 랜덤 움직임
 // 2. Hello, bye 구현
 //------------------------
 
@@ -9,6 +12,7 @@
 #include <thread>
 #include <vector>
 #include <set>
+#include <array>
 #include <mutex>
 #include <chrono>
 #include <queue>
@@ -18,7 +22,9 @@
 
 #include "protocol.h"
 #include <boost/asio.hpp>
+#include "include/lua.hpp"
 
+#pragma comment(lib, "lua54.lib")
 
 using namespace std;
 using namespace chrono;
@@ -30,25 +36,18 @@ const auto X_START_POS = 4;
 const auto Y_START_POS = 4;
 
 class session;
+class NPC;
 
 concurrency::concurrent_unordered_map<int, shared_ptr<session>> players;
 //리눅스에서는 tbb:concurrent_~~
 
-void Init_Server()
-{
-	_wsetlocale(LC_ALL, L"korean");
-}
+concurrency::concurrent_unordered_map<int, shared_ptr<NPC>> npcs;
 
-
-int GetNewClientID()
-{
-	if (g_user_ID >= MAX_USER) {
-	cout << "MAX USER FULL\n";
-	exit(-1);
-	}
-	return g_user_ID++;
-}
-
+void Init_Server();
+int GetNewClientID();
+int API_get_x(lua_State* L);
+int API_get_y(lua_State* L);
+int API_SendMessage(lua_State* L);
 
 class session
 	: public std::enable_shared_from_this<session>
@@ -301,6 +300,66 @@ public:
 	}
 };
 
+class NPC
+	: public std::enable_shared_from_this<NPC>
+{
+private:
+	tcp::socket socket_;
+	atomic_bool is_active;
+	int id;
+	unordered_set<int> view_list;
+	mutex vl;
+	int last_move_time;
+
+	void do_write(unsigned char* packet, std::size_t length)
+	{
+		auto self(shared_from_this());
+		socket_.async_write_some(boost::asio::buffer(packet, length),
+			[this, self, packet, length](boost::system::error_code ec, std::size_t bytes_transferred)
+			{
+				if (!ec)
+				{
+					if (length != bytes_transferred) {
+						cout << "Incomplete Send occured on session[" << id << "]. This session should be closed.\n";
+					}
+					delete packet; //삭제 해줘야한다. 
+				}
+			});
+	}
+
+public:
+	int pos_x;
+	int pos_y;
+	lua_State* L;
+	mutex ll;
+
+	NPC(tcp::socket s, int _id, int _x, int _y)
+		:socket_(std::move(s)), id(_id), pos_x(_x), pos_y(_y)
+	{
+		is_active = false;
+		last_move_time = 0;
+	}
+
+	void Send_Packet(void* packet)
+	{
+		int packet_size = reinterpret_cast<unsigned char*>(packet)[0];
+		unsigned char* buff = new unsigned char[packet_size];
+		memcpy(buff, packet, packet_size);
+		do_write(buff, packet_size);
+	}
+
+	void send_chat_packet(int p_id, const char* mess)
+	{
+		sc_packet_chat packet;
+		packet.id = p_id;
+		packet.size = sizeof(sc_packet_chat);
+		packet.type = SC_CHAT;
+		strcpy_s(packet.message, mess);
+
+		Send_Packet(&packet);
+	}
+};
+
 class server
 {
 private:
@@ -321,12 +380,39 @@ private:
 		});
 	}
 
+	void InitializeNPC()
+	{
+		std::cout << "NPC initialize begin.\n";
+		for (int i = 0; i < NUM_OF_NPC; ++i) {
+			int x = rand() % BOARD_WIDTH;
+			int y = rand() % BOARD_HEIGHT;
+			npcs[i] = std::make_shared<NPC>(std::move(socket_), i, x, y);
+
+			auto L = npcs[i]->L = luaL_newstate();
+
+			luaL_openlibs(L);
+			luaL_loadfile(L, "npc.lua");
+			lua_pcall(L, 0, 0, 0);
+
+			lua_getglobal(L, "set_uid");
+			lua_pushnumber(L, i);
+			lua_pcall(L, 1, 0, 0);
+			// lua_pop(L, 1);// eliminate set_uid from stack after call
+
+			lua_register(L, "API_SendMessage", API_SendMessage);
+			lua_register(L, "API_get_x", API_get_x);
+			lua_register(L, "API_get_y", API_get_y);
+		}
+		std::cout << "done\n";
+	}
+
 public:
 	server(boost::asio::io_context& io_service, int port)
 		: acceptor_(io_service, tcp::endpoint(tcp::v4(), port)),
 		socket_(io_service)
 	{
 		do_accept();
+		InitializeNPC();
 	}
 };
 
@@ -334,7 +420,6 @@ void worker_thread(boost::asio::io_context *service)
 {
 	service->run();
 }
-
 
 int main()
 {
@@ -346,4 +431,50 @@ int main()
 
 	for (auto i = 0; i < 4; i++) worker_threads.emplace_back(worker_thread, &io_service);
 	for (auto &th : worker_threads) th.join();
+}
+
+void Init_Server()
+{
+	_wsetlocale(LC_ALL, L"korean");
+}
+
+int GetNewClientID()
+{
+	if (g_user_ID >= MAX_USER) {
+		cout << "MAX USER FULL\n";
+		exit(-1);
+	}
+	return g_user_ID++;
+}
+
+int API_get_x(lua_State* L)
+{
+	int user_id =
+		(int)lua_tointeger(L, -1);
+	lua_pop(L, 2);
+	int x = npcs[user_id]->pos_x;
+	lua_pushnumber(L, x);
+	return 1;
+}
+
+int API_get_y(lua_State* L)
+{
+	int user_id =
+		(int)lua_tointeger(L, -1);
+	lua_pop(L, 2);
+	int y = npcs[user_id]->pos_y;
+	lua_pushnumber(L, y);
+	return 1;
+}
+
+int API_SendMessage(lua_State* L)
+{
+	int my_id = (int)lua_tointeger(L, -3);
+	int user_id = (int)lua_tointeger(L, -2);
+	char* mess = (char*)lua_tostring(L, -1);
+
+	lua_pop(L, 4);
+
+	npcs[user_id]->send_chat_packet(my_id, mess);
+	return 0;
 }
