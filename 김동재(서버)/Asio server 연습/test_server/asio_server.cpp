@@ -2,7 +2,7 @@
 // 0. 뷰리스트 구현 <- 완료
 // 1. 주기적으로 이동하는 NPC 생성
 //    1-1. NPC class 구현 - 완료
-//    1-2. NPC 화면에 그리기
+//    1-2. NPC 화면에 그리기 - 완료
 //    1-3. NPC 랜덤 움직임
 // 2. Hello, bye 구현
 //------------------------
@@ -49,6 +49,67 @@ int API_get_x(lua_State* L);
 int API_get_y(lua_State* L);
 int API_SendMessage(lua_State* L);
 
+class NPC
+	: public std::enable_shared_from_this<NPC>
+{
+private:
+	tcp::socket socket_;
+	unordered_set<int> view_list;
+	mutex vl;
+	int last_move_time;
+
+	void do_write(unsigned char* packet, std::size_t length)
+	{
+		auto self(shared_from_this());
+		socket_.async_write_some(boost::asio::buffer(packet, length),
+			[this, self, packet, length](boost::system::error_code ec, std::size_t bytes_transferred)
+			{
+				if (!ec)
+				{
+					if (length != bytes_transferred) {
+						cout << "Incomplete Send occured on session[" << id << "]. This session should be closed.\n";
+					}
+					delete packet; //삭제 해줘야한다. 
+				}
+			});
+	}
+
+public:
+	atomic_bool is_active;
+	int id;
+	int pos_x;
+	int pos_y;
+	lua_State* L;
+	mutex ll;
+
+	NPC(tcp::socket s, int _id, int _x, int _y)
+		:socket_(std::move(s)), id(_id), pos_x(_x), pos_y(_y)
+	{
+		is_active = false;
+		last_move_time = 0;
+	}
+
+	void Send_Packet(void* packet)
+	{
+		int packet_size = reinterpret_cast<unsigned char*>(packet)[0];
+		unsigned char* buff = new unsigned char[packet_size];
+		memcpy(buff, packet, packet_size);
+		do_write(buff, packet_size);
+	}
+
+	void send_chat_packet(int p_id, const char* mess)
+	{
+		sc_packet_chat packet;
+		packet.id = p_id;
+		packet.size = sizeof(sc_packet_chat);
+		packet.type = SC_CHAT;
+		strcpy_s(packet.message, mess);
+
+		Send_Packet(&packet);
+	}
+};
+
+
 class session
 	: public std::enable_shared_from_this<session>
 {
@@ -71,6 +132,12 @@ private:
 	{
 		if (abs(players[from]->pos_x - players[to]->pos_x) > VIEW_RANGE) return false;
 		return abs(players[from]->pos_y - players[to]->pos_y) <= VIEW_RANGE;
+	}
+	
+	bool can_see_npc(int from, int to)
+	{
+		if (abs(players[from]->pos_x - npcs[to - MAX_USER]->pos_x) > VIEW_RANGE) return false;
+		return abs(players[from]->pos_y - npcs[to - MAX_USER]->pos_y) <= VIEW_RANGE;
 	}
 
 	void Send_Packet(void *packet, unsigned id)
@@ -126,7 +193,15 @@ private:
 				near_list.insert(p->my_id_);
 		}
 
-		for (auto& p_id : near_list) {
+		for (auto& [key, npc] : npcs) {
+			if (npc == nullptr) continue;
+			if (can_see_npc(id,npc->id))
+				near_list.insert(npc->id);
+		}
+		//-----새로운 시야 리스트 생성 완료
+
+		for (auto& p_id : near_list) { //near_list 유저 처리
+			if (p_id >= MAX_USER) continue;
 			auto& cpl = players[p_id];
 			
 			cpl->vl.lock();
@@ -152,7 +227,24 @@ private:
 			}
 		}
 
-		for (auto& pl : old_vlist) {
+		for (auto& n_id : near_list) { //near_list npc 처리
+			if (n_id < MAX_USER) continue;
+			auto& np = npcs[n_id - MAX_USER];
+			if (!np->is_active) {
+				//npc를 active 시키고 타이머에 따라 움직이게 해야함
+				sc_packet_put_player put_npc; //플레이어 추가 패킷 준비
+				put_npc.id = np->id;
+				put_npc.size = sizeof(sc_packet_put_player);
+				put_npc.type = SC_PUT_PLAYER;
+				put_npc.x = np->pos_x;
+				put_npc.y = np->pos_y;
+
+				P->Send_Packet(&put_npc);
+			}
+		}
+
+		for (auto& pl : old_vlist) { //플레이어 삭제처리
+			if (pl >= MAX_USER) continue;
 			if (pl == P->my_id_) continue;
 			if (0 == near_list.count(pl)) { //내 시야에서 다른 플레이어가 사라지면 서로 삭제(서로 시야가 같은 경우)
 				sc_packet_remove_player sp_re1;
@@ -169,6 +261,17 @@ private:
 				players[pl]->vl.lock();
 				players[pl]->view_list.erase(P->my_id_);
 				players[pl]->vl.unlock();
+			}
+		}
+
+		for (auto& nl : old_vlist) { // NPC 삭제 처리
+			if (nl < MAX_USER) continue;
+			if (0 == near_list.count(nl)) {
+				sc_packet_remove_player remove_npc;
+				remove_npc.id = nl;
+				remove_npc.size = sizeof(sc_packet_remove_player);
+				remove_npc.type = SC_REMOVE_PLAYER;
+				P->Send_Packet(&remove_npc);
 			}
 		}
 		P->view_list = near_list;
@@ -300,66 +403,6 @@ public:
 	}
 };
 
-class NPC
-	: public std::enable_shared_from_this<NPC>
-{
-private:
-	tcp::socket socket_;
-	atomic_bool is_active;
-	int id;
-	unordered_set<int> view_list;
-	mutex vl;
-	int last_move_time;
-
-	void do_write(unsigned char* packet, std::size_t length)
-	{
-		auto self(shared_from_this());
-		socket_.async_write_some(boost::asio::buffer(packet, length),
-			[this, self, packet, length](boost::system::error_code ec, std::size_t bytes_transferred)
-			{
-				if (!ec)
-				{
-					if (length != bytes_transferred) {
-						cout << "Incomplete Send occured on session[" << id << "]. This session should be closed.\n";
-					}
-					delete packet; //삭제 해줘야한다. 
-				}
-			});
-	}
-
-public:
-	int pos_x;
-	int pos_y;
-	lua_State* L;
-	mutex ll;
-
-	NPC(tcp::socket s, int _id, int _x, int _y)
-		:socket_(std::move(s)), id(_id), pos_x(_x), pos_y(_y)
-	{
-		is_active = false;
-		last_move_time = 0;
-	}
-
-	void Send_Packet(void* packet)
-	{
-		int packet_size = reinterpret_cast<unsigned char*>(packet)[0];
-		unsigned char* buff = new unsigned char[packet_size];
-		memcpy(buff, packet, packet_size);
-		do_write(buff, packet_size);
-	}
-
-	void send_chat_packet(int p_id, const char* mess)
-	{
-		sc_packet_chat packet;
-		packet.id = p_id;
-		packet.size = sizeof(sc_packet_chat);
-		packet.type = SC_CHAT;
-		strcpy_s(packet.message, mess);
-
-		Send_Packet(&packet);
-	}
-};
-
 class server
 {
 private:
@@ -386,7 +429,8 @@ private:
 		for (int i = 0; i < NUM_OF_NPC; ++i) {
 			int x = rand() % BOARD_WIDTH;
 			int y = rand() % BOARD_HEIGHT;
-			npcs[i] = std::make_shared<NPC>(std::move(socket_), i, x, y);
+			int id = i + MAX_USER;
+			npcs[i] = std::make_shared<NPC>(std::move(socket_), id, x, y);
 
 			auto L = npcs[i]->L = luaL_newstate();
 
@@ -403,7 +447,7 @@ private:
 			lua_register(L, "API_get_x", API_get_x);
 			lua_register(L, "API_get_y", API_get_y);
 		}
-		std::cout << "done\n";
+		std::cout << "Done\n";
 	}
 
 public:
