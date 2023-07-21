@@ -5,8 +5,13 @@
 //    1-2. NPC 화면에 그리기 - 완료
 //    1-3. NPC 랜덤 움직임 - 완료
 //        > 부족하다 생각되는 부분 : timer_thread에서 직접 MoveNpc 함수를 호출한다.
-//        > worker_thread에게 신호를 줘서 worker_thread에서 MoveNpc를 실행하도록 하는게 좋을것 같다.
+//        > worker_thread에게 신호를 줘서 worker_thread에서 MoveNpc를 실행하도록 하는게 좋을까?
 // 2. Hello, bye 구현
+//		  > npc 이동, player 이동마다 시야 리스트 내에서 겹치는지 확인한다. 
+//        > 겹친다면 즉시 hello를 출력하고 3초뒤에 bye를 출력한다. - 완료
+// 3. 플레이어와 겹치면 멈춰서 3초간 hello라고 하고 3초 뒤에 bye 라고 하며 다시 움직인다.
+// 4. 개선점
+//        > npc ai의 처리를 timer_thread에서 직접 처리하지 않고 다른 쓰레드를 통해 처리한다.
 //------------------------
 
 
@@ -41,20 +46,35 @@ const auto Y_START_POS = 4;
 
 class session;
 class NPC;
+class TIMER_EVENT;
 
-concurrency::concurrent_unordered_map<int, shared_ptr<session>> players;
 //리눅스에서는 tbb:concurrent_~~
-
+concurrency::concurrent_unordered_map<int, shared_ptr<session>> players;
 concurrency::concurrent_unordered_map<int, shared_ptr<NPC>> npcs;
+concurrency::concurrent_priority_queue<TIMER_EVENT> timer_queue;
 
 void Init_Server();
 int GetNewClientID();
-int API_get_x(lua_State* L);
-int API_get_y(lua_State* L);
+int API_get_x_p(lua_State* L);
+int API_get_y_p(lua_State* L);
+int API_get_x_n(lua_State* L);
+int API_get_y_n(lua_State* L);
 int API_SendMessage(lua_State* L);
 void wakeupNPC(int n_id);
 bool can_see_npc(int from, int to);
 void MoveNpc(int npc_id);
+
+enum EVENT_TYPE { EV_RANDOM_MOVE, EV_SAY_HELLO, EV_SAY_BYE };
+struct TIMER_EVENT {
+	int obj_id;
+	chrono::system_clock::time_point wakeup_time;
+	EVENT_TYPE event_id;
+	int target_id;
+	constexpr bool operator < (const TIMER_EVENT& L) const
+	{
+		return (wakeup_time > L.wakeup_time);
+	}
+};
 
 class NPC
 	: public std::enable_shared_from_this<NPC>
@@ -191,6 +211,8 @@ private:
 			if (npc == nullptr) continue;
 			if (can_see_npc(id, npc->id)) {
 				near_list.insert(npc->id);
+				TIMER_EVENT ev{ key, chrono::system_clock::now() + 1s, EV_SAY_HELLO, id};
+				timer_queue.push(ev);
 			}
 		}
 		//-----새로운 시야 리스트 생성 완료
@@ -222,7 +244,7 @@ private:
 					P->Send_Packet(&sp_put_o);
 				}
 			}
-			else {
+			else { //near_list npc 처리
 				if (npcs[p_id] == nullptr) continue;
 				auto& np = npcs[p_id];
 				if (!np->is_active) {
@@ -446,13 +468,15 @@ private:
 			lua_pcall(L, 0, 0, 0);
 
 			lua_getglobal(L, "set_uid");
-			lua_pushnumber(L, i);
+			lua_pushnumber(L, id);
 			lua_pcall(L, 1, 0, 0);
 			// lua_pop(L, 1);// eliminate set_uid from stack after call
 
 			lua_register(L, "API_SendMessage", API_SendMessage);
-			lua_register(L, "API_get_x", API_get_x);
-			lua_register(L, "API_get_y", API_get_y);
+			lua_register(L, "API_get_x_p", API_get_x_p);
+			lua_register(L, "API_get_y_p", API_get_y_p);
+			lua_register(L, "API_get_x_n", API_get_x_n);
+			lua_register(L, "API_get_y_n", API_get_y_n);
 		}
 		std::cout << "Done\n";
 	}
@@ -467,19 +491,6 @@ public:
 	}
 };
 
-enum EVENT_TYPE { EV_RANDOM_MOVE };
-struct TIMER_EVENT {
-	int obj_id;
-	chrono::system_clock::time_point wakeup_time;
-	EVENT_TYPE event_id;
-	int target_id;
-	constexpr bool operator < (const TIMER_EVENT& L) const
-	{
-		return (wakeup_time > L.wakeup_time);
-	}
-};
-
-concurrency::concurrent_priority_queue<TIMER_EVENT> timer_queue;
 
 void worker_thread(boost::asio::io_context *service)
 {
@@ -501,6 +512,22 @@ void timer_thread()
 			switch (ev.event_id) {
 			case EV_RANDOM_MOVE:
 				MoveNpc(ev.obj_id);
+				break;
+			case EV_SAY_BYE:
+				sc_packet_chat packet;
+				packet.id = ev.obj_id;
+				packet.size = sizeof(sc_packet_chat);
+				packet.type = SC_CHAT;
+				strcpy_s(packet.message, "BYE");
+
+				players[ev.target_id]->Send_Packet(&packet);
+				break;
+			case EV_SAY_HELLO :
+				auto L = npcs[ev.obj_id]->L;
+				lua_getglobal(L, "event_player_move");
+				lua_pushnumber(L, ev.target_id);
+				lua_pcall(L, 1, 0, 0);
+				lua_pop(L, 1);
 				break;
 			}
 			continue;		// 즉시 다음 작업 꺼내기
@@ -538,17 +565,38 @@ int GetNewClientID()
 	return g_user_ID++;
 }
 
-int API_get_x(lua_State* L)
+int API_get_x_p(lua_State* L)
 {
 	int user_id =
 		(int)lua_tointeger(L, -1);
 	lua_pop(L, 2);
+	int x = players[user_id]->pos_x;
+	lua_pushnumber(L, x);
+	return 1;
+}
+
+int API_get_y_p(lua_State* L)
+{
+	int user_id =
+		(int)lua_tointeger(L, -1);
+	lua_pop(L, 2);
+	int y = players[user_id]->pos_y;
+	lua_pushnumber(L, y);
+	return 1;
+}
+
+int API_get_x_n(lua_State* L)
+{
+	int user_id =
+		(int)lua_tointeger(L, -1);
+	lua_pop(L, 2);
+
 	int x = npcs[user_id]->pos_x;
 	lua_pushnumber(L, x);
 	return 1;
 }
 
-int API_get_y(lua_State* L)
+int API_get_y_n(lua_State* L)
 {
 	int user_id =
 		(int)lua_tointeger(L, -1);
@@ -566,7 +614,17 @@ int API_SendMessage(lua_State* L)
 
 	lua_pop(L, 4);
 
-	npcs[user_id]->send_chat_packet(my_id, mess);
+	sc_packet_chat packet;
+	packet.id = my_id;
+	packet.size = sizeof(sc_packet_chat);
+	packet.type = SC_CHAT;
+	strcpy_s(packet.message, mess);
+
+	players[user_id]->Send_Packet(&packet);
+
+	TIMER_EVENT ev{ my_id, chrono::system_clock::now() + 3s, EV_SAY_BYE, user_id };
+	timer_queue.push(ev);
+
 	return 0;
 }
 
@@ -613,8 +671,11 @@ void MoveNpc(int npc_id)
 	unordered_set<int> new_vl;
 	for (auto& [key, p] : players) {
 		if (p == nullptr) continue;
-		if (can_see_npc(key, npc_id))
+		if (can_see_npc(key, npc_id)) {
 			new_vl.insert(key);
+			TIMER_EVENT ev{ npc_id, chrono::system_clock::now() + 1s, EV_SAY_HELLO, key };
+			timer_queue.push(ev);
+		}
 	}
 
 	for (auto pl : new_vl) {
