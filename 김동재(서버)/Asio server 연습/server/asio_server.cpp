@@ -526,7 +526,11 @@ void timer_thread()
 			}
 			switch (ev.event_id) {
 			case EV_RANDOM_MOVE:
-				if (npcs[ev.obj_id]->state != ST_IDLE) break;
+				if (npcs[ev.obj_id]->state != ST_IDLE) {
+					TIMER_EVENT n_ev{ ev.obj_id, chrono::system_clock::now() + 1s, EV_RANDOM_MOVE, 0 };
+					timer_queue.push(n_ev);
+					break;
+				}
 				/*EVENT move_event;
 				move_event.event_id = EC_RANDOM_MOVE;
 				move_event.obj_id = ev.obj_id;
@@ -551,8 +555,6 @@ void timer_thread()
 				strcpy_s(packet.message, "BYE");
 
 				players[ev.target_id]->Send_Packet(&packet);
-
-				MoveNpc(ev.obj_id);
 				break;
 			case EV_SAY_HELLO :
 				/*EVENT hello_event;
