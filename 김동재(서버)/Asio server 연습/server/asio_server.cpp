@@ -28,6 +28,7 @@
 #include <unordered_set>
 #include <concurrent_unordered_map.h>
 #include <concurrent_priority_queue.h>
+#include <concurrent_queue.h>
 
 #include "protocol.h"
 #include <boost/asio.hpp>
@@ -47,11 +48,13 @@ const auto Y_START_POS = 4;
 class session;
 class NPC;
 class TIMER_EVENT;
+class EVENT;
 
 //리눅스에서는 tbb:concurrent_~~
 concurrency::concurrent_unordered_map<int, shared_ptr<session>> players;
 concurrency::concurrent_unordered_map<int, shared_ptr<NPC>> npcs;
 concurrency::concurrent_priority_queue<TIMER_EVENT> timer_queue;
+concurrency::concurrent_queue<EVENT> event_queue;
 
 void Init_Server();
 int GetNewClientID();
@@ -76,6 +79,7 @@ struct TIMER_EVENT {
 	}
 };
 
+enum NPC_STATE {ST_IDLE, ST_HELLO};
 class NPC
 	: public std::enable_shared_from_this<NPC>
 {
@@ -108,10 +112,12 @@ public:
 	int pos_y;
 	lua_State* L;
 	mutex ll;
+	NPC_STATE state;
 
 	NPC(tcp::socket s, int _id, int _x, int _y)
 		:socket_(std::move(s)), id(_id), pos_x(_x), pos_y(_y)
 	{
+		state = ST_IDLE;
 		is_active = false;
 		last_move_time = 0;
 	}
@@ -211,8 +217,10 @@ private:
 			if (npc == nullptr) continue;
 			if (can_see_npc(id, npc->id)) {
 				near_list.insert(npc->id);
-				TIMER_EVENT ev{ key, chrono::system_clock::now() + 1s, EV_SAY_HELLO, id};
-				timer_queue.push(ev);
+				if (npc->state == ST_IDLE) {
+					TIMER_EVENT ev{ key, chrono::system_clock::now() + 1s, EV_SAY_HELLO, id };
+					timer_queue.push(ev);
+				}
 			}
 		}
 		//-----새로운 시야 리스트 생성 완료
@@ -491,6 +499,13 @@ public:
 	}
 };
 
+enum EVENT_CASE {EC_RANDOM_MOVE, EC_SAY_HELLO,EC_SAY_BYE};
+struct EVENT
+{
+	int obj_id;
+	EVENT_CASE event_id;
+	int target_id;
+};
 
 void worker_thread(boost::asio::io_context *service)
 {
@@ -511,9 +526,24 @@ void timer_thread()
 			}
 			switch (ev.event_id) {
 			case EV_RANDOM_MOVE:
+				if (npcs[ev.obj_id]->state != ST_IDLE) break;
+				/*EVENT move_event;
+				move_event.event_id = EC_RANDOM_MOVE;
+				move_event.obj_id = ev.obj_id;
+				move_event.target_id = ev.target_id;
+
+				event_queue.push(move_event);*/
+
 				MoveNpc(ev.obj_id);
 				break;
 			case EV_SAY_BYE:
+				/*EVENT bye_event;
+				bye_event.event_id = EC_SAY_BYE;
+				bye_event.obj_id = ev.obj_id;
+				bye_event.target_id = ev.target_id;
+
+				event_queue.push(bye_event);*/
+				npcs[ev.obj_id]->state = ST_IDLE;
 				sc_packet_chat packet;
 				packet.id = ev.obj_id;
 				packet.size = sizeof(sc_packet_chat);
@@ -521,8 +551,16 @@ void timer_thread()
 				strcpy_s(packet.message, "BYE");
 
 				players[ev.target_id]->Send_Packet(&packet);
+
+				MoveNpc(ev.obj_id);
 				break;
 			case EV_SAY_HELLO :
+				/*EVENT hello_event;
+				hello_event.event_id = EC_SAY_HELLO;
+				hello_event.obj_id = ev.obj_id;
+				hello_event.target_id = ev.target_id;
+
+				event_queue.push(hello_event);*/
 				auto L = npcs[ev.obj_id]->L;
 				lua_getglobal(L, "event_player_move");
 				lua_pushnumber(L, ev.target_id);
@@ -621,6 +659,8 @@ int API_SendMessage(lua_State* L)
 	strcpy_s(packet.message, mess);
 
 	players[user_id]->Send_Packet(&packet);
+	
+	npcs[my_id]->state = ST_HELLO;
 
 	TIMER_EVENT ev{ my_id, chrono::system_clock::now() + 3s, EV_SAY_BYE, user_id };
 	timer_queue.push(ev);
