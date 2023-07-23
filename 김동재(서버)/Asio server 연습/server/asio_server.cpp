@@ -407,13 +407,13 @@ public:
 		p.y = pos_y;
 
 		// 나의 접속을 모든 플레이어에게 알림
-		for (auto& pl : players) {
-			if (pl.second == nullptr) continue;
-			if (can_see(pl.second->my_id_, my_id_)) {
-				pl.second->Send_Packet(&p);
-				pl.second->vl.lock();
-				pl.second->view_list.insert(my_id_);
-				pl.second->vl.unlock();
+		for (auto& [key,pl] : players) {
+			if (pl == nullptr) continue;
+			if (can_see(pl->my_id_, my_id_)) {
+				pl->Send_Packet(&p);
+				pl->vl.lock();
+				pl->view_list.insert(my_id_);
+				pl->vl.unlock();
 			}
 		}
 		// 나에게 접속해 있는 다른 플레이어 정보를 전송
@@ -427,6 +427,18 @@ public:
 				p.y = pl.second->pos_y;
 				Send_Packet(&p);
 				view_list.insert(pl.second->my_id_);
+			}
+		}
+
+		for (auto& [key, npc] : npcs) {
+			if (can_see_npc(my_id_, key)) {
+				p.id = key;
+				p.x = npc->pos_x;
+				p.y = npc->pos_y;
+				Send_Packet(&p);
+				view_list.insert(key);
+
+				wakeupNPC(key);
 			}
 		}
 	}
