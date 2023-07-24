@@ -12,6 +12,8 @@
 // 3. 플레이어와 겹치면 멈춰서 3초간 hello라고 하고 3초 뒤에 bye 라고 하며 다시 움직인다.
 // 4. 개선점
 //        > npc ai의 처리를 timer_thread에서 직접 처리하지 않고 다른 쓰레드를 통해 처리한다.
+//           --> 또 다른 queue를 이용해서 worker_thread에서 실행한다. => 실패, 이유: io_context->run()은 블락킹
+//           --> ai를 실행할 또 다른 thread를 만든다 --> 실패, 성능 저하가 너무 심하다.
 //------------------------
 
 
@@ -575,11 +577,17 @@ void timer_thread()
 				hello_event.target_id = ev.target_id;
 
 				event_queue.push(hello_event);*/
+
+				//timer thread는 단일 쓰레드인데, 루아를 lock 해주지 않으면 문제가 발생한다. 그 이유가뭘까?
+				//예상되는 이유 : event_player_move를 하면서 lua_state가 사용된다.
+
+				npcs[ev.obj_id]->ll.lock();
 				auto L = npcs[ev.obj_id]->L;
 				lua_getglobal(L, "event_player_move");
 				lua_pushnumber(L, ev.target_id);
 				lua_pcall(L, 1, 0, 0);
 				lua_pop(L, 1);
+				npcs[ev.obj_id]->ll.unlock();
 				break;
 			}
 			continue;		// 즉시 다음 작업 꺼내기
