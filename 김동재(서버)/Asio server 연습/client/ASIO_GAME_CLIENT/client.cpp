@@ -11,7 +11,7 @@ using namespace std;
 #pragma comment (lib, "winmm.lib")
 #pragma comment (lib, "ws2_32.lib")
 
-#include "C:\Users\rlaeh\source\repos\ASIO_GAME_SERVER\ASIO_GAME_SERVER\protocol.h"
+#include "..\..\server\ASIO_GAME_SERVER\protocol.h"
 
 sf::TcpSocket s_socket;
 

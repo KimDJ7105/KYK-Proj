@@ -554,13 +554,16 @@ void timer_thread()
 
 				MoveNpc(ev.obj_id);
 				break;
-			case EV_SAY_BYE:
+			case EV_SAY_BYE: {
 				/*EVENT bye_event;
 				bye_event.event_id = EC_SAY_BYE;
 				bye_event.obj_id = ev.obj_id;
 				bye_event.target_id = ev.target_id;
 
 				event_queue.push(bye_event);*/
+				const shared_ptr<session> target_player = players[ev.target_id];
+				if (nullptr == target_player)
+					break;
 				npcs[ev.obj_id]->state = ST_IDLE;
 				sc_packet_chat packet;
 				packet.id = ev.obj_id;
@@ -568,9 +571,10 @@ void timer_thread()
 				packet.type = SC_CHAT;
 				strcpy_s(packet.message, "BYE");
 
-				players[ev.target_id]->Send_Packet(&packet);
+				target_player->Send_Packet(&packet);
+			}
 				break;
-			case EV_SAY_HELLO :
+			case EV_SAY_HELLO: {
 				/*EVENT hello_event;
 				hello_event.event_id = EC_SAY_HELLO;
 				hello_event.obj_id = ev.obj_id;
@@ -581,6 +585,8 @@ void timer_thread()
 				//timer thread는 단일 쓰레드인데, 루아를 lock 해주지 않으면 문제가 발생한다. 그 이유가뭘까?
 				//예상되는 이유 : event_player_move를 하면서 lua_state가 사용된다.
 
+				const shared_ptr<session> target_player = players[ev.target_id];
+				if (nullptr == target_player) break;
 				npcs[ev.obj_id]->ll.lock();
 				auto L = npcs[ev.obj_id]->L;
 				lua_getglobal(L, "event_player_move");
@@ -589,6 +595,7 @@ void timer_thread()
 				lua_pop(L, 1);
 				npcs[ev.obj_id]->ll.unlock();
 				break;
+			}
 			}
 			continue;		// 즉시 다음 작업 꺼내기
 		}
