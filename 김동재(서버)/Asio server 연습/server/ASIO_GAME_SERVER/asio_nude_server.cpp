@@ -1,19 +1,5 @@
 //------------------------
-// 0. 뷰리스트 구현 <- 완료
-// 1. 주기적으로 이동하는 NPC 생성
-//    1-1. NPC class 구현 - 완료
-//    1-2. NPC 화면에 그리기 - 완료
-//    1-3. NPC 랜덤 움직임 - 완료
-//        > 부족하다 생각되는 부분 : timer_thread에서 직접 MoveNpc 함수를 호출한다.
-//        > worker_thread에게 신호를 줘서 worker_thread에서 MoveNpc를 실행하도록 하는게 좋을까?
-// 2. Hello, bye 구현
-//		  > npc 이동, player 이동마다 시야 리스트 내에서 겹치는지 확인한다. 
-//        > 겹친다면 즉시 hello를 출력하고 3초뒤에 bye를 출력한다. - 완료
-// 3. 플레이어와 겹치면 멈춰서 3초간 hello라고 하고 3초 뒤에 bye 라고 하며 다시 움직인다.
-// 4. 개선점
-//        > npc ai의 처리를 timer_thread에서 직접 처리하지 않고 다른 쓰레드를 통해 처리한다.
-//           --> 또 다른 queue를 이용해서 worker_thread에서 실행한다. => 실패, 이유: io_context->run()은 블락킹
-//           --> ai를 실행할 또 다른 thread를 만든다 --> 실패, 성능 저하가 너무 심하다.
+//
 //------------------------
 
 
@@ -34,6 +20,8 @@
 
 #include "protocol.h"
 #include <boost/asio.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/bind.hpp>
 #include "include/lua.hpp"
 
 #pragma comment(lib, "lua54.lib")
@@ -68,6 +56,7 @@ int API_SendMessage(lua_State* L);
 void wakeupNPC(int n_id);
 bool can_see_npc(int from, int to);
 void MoveNpc(int npc_id);
+void event_excuter(const boost::system::error_code& ec, boost::asio::steady_timer* timer);
 
 enum EVENT_TYPE { EV_RANDOM_MOVE, EV_SAY_HELLO, EV_SAY_BYE };
 struct TIMER_EVENT {
@@ -459,6 +448,7 @@ class server
 private:
 	tcp::acceptor acceptor_;
 	tcp::socket socket_;
+
 	void do_accept()
 	{
 		acceptor_.async_accept(socket_,
@@ -545,55 +535,29 @@ void timer_thread()
 					timer_queue.push(n_ev);
 					break;
 				}
-				/*EVENT move_event;
+				EVENT move_event;
 				move_event.event_id = EC_RANDOM_MOVE;
 				move_event.obj_id = ev.obj_id;
 				move_event.target_id = ev.target_id;
 
-				event_queue.push(move_event);*/
-
-				MoveNpc(ev.obj_id);
+				event_queue.push(move_event);
 				break;
 			case EV_SAY_BYE: {
-				/*EVENT bye_event;
+				EVENT bye_event;
 				bye_event.event_id = EC_SAY_BYE;
 				bye_event.obj_id = ev.obj_id;
 				bye_event.target_id = ev.target_id;
 
-				event_queue.push(bye_event);*/
-				const shared_ptr<session> target_player = players[ev.target_id];
-				if (nullptr == target_player)
-					break;
-				npcs[ev.obj_id]->state = ST_IDLE;
-				sc_packet_chat packet;
-				packet.id = ev.obj_id;
-				packet.size = sizeof(sc_packet_chat);
-				packet.type = SC_CHAT;
-				strcpy_s(packet.message, "BYE");
-
-				target_player->Send_Packet(&packet);
+				event_queue.push(bye_event);
 			}
 				break;
 			case EV_SAY_HELLO: {
-				/*EVENT hello_event;
+				EVENT hello_event;
 				hello_event.event_id = EC_SAY_HELLO;
 				hello_event.obj_id = ev.obj_id;
 				hello_event.target_id = ev.target_id;
 
-				event_queue.push(hello_event);*/
-
-				//timer thread는 단일 쓰레드인데, 루아를 lock 해주지 않으면 문제가 발생한다. 그 이유가뭘까?
-				//예상되는 이유 : event_player_move를 하면서 lua_state가 사용된다.
-
-				const shared_ptr<session> target_player = players[ev.target_id];
-				if (nullptr == target_player) break;
-				npcs[ev.obj_id]->ll.lock();
-				auto L = npcs[ev.obj_id]->L;
-				lua_getglobal(L, "event_player_move");
-				lua_pushnumber(L, ev.target_id);
-				lua_pcall(L, 1, 0, 0);
-				lua_pop(L, 1);
-				npcs[ev.obj_id]->ll.unlock();
+				event_queue.push(hello_event);
 				break;
 			}
 			}
@@ -608,6 +572,9 @@ int main()
 	boost::asio::io_context io_service;
 	vector <thread > worker_threads;
 	server s(io_service, MY_SERVER_PORT);
+
+	boost::asio::steady_timer event_timer(io_service,boost::asio::chrono::microseconds(1));
+	event_timer.async_wait(boost::bind(event_excuter, boost::asio::placeholders::error, &event_timer));
 
 	thread timer( timer_thread );
 
@@ -800,5 +767,51 @@ void MoveNpc(int npc_id)
 	else {
 		TIMER_EVENT ev{ npc_id, chrono::system_clock::now() + 1s, EV_RANDOM_MOVE, 0 };
 		timer_queue.push(ev);
+	}
+}
+
+void event_excuter(const boost::system::error_code& ec, boost::asio::steady_timer* timer)
+{
+	if (!ec) {
+		//std::cout << "Hi Im event excuter\n";
+		EVENT ev;
+		while (event_queue.try_pop(ev)) {
+			switch (ev.event_id) {
+			case EC_RANDOM_MOVE: {
+				MoveNpc(ev.obj_id);
+			}
+				break;
+			case EC_SAY_BYE: {
+				const shared_ptr<session> target_player = players[ev.target_id];
+				if (nullptr == target_player)
+					break;
+				npcs[ev.obj_id]->state = ST_IDLE;
+				sc_packet_chat packet;
+				packet.id = ev.obj_id;
+				packet.size = sizeof(sc_packet_chat);
+				packet.type = SC_CHAT;
+				strcpy_s(packet.message, "BYE");
+
+				target_player->Send_Packet(&packet);
+			}
+				break;
+			case EC_SAY_HELLO :{
+				const shared_ptr<session> target_player = players[ev.target_id];
+				if (nullptr == target_player) break;
+				npcs[ev.obj_id]->ll.lock();
+				auto L = npcs[ev.obj_id]->L;
+				lua_getglobal(L, "event_player_move");
+				lua_pushnumber(L, ev.target_id);
+				lua_pcall(L, 1, 0, 0);
+				lua_pop(L, 1);
+				npcs[ev.obj_id]->ll.unlock();
+			}
+				break;
+			}
+		}
+
+
+		timer->expires_at(timer->expiry() + boost::asio::chrono::seconds(0));
+		timer->async_wait(boost::bind(event_excuter, boost::asio::placeholders::error, timer));
 	}
 }
