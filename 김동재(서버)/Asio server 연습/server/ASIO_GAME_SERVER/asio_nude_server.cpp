@@ -380,6 +380,11 @@ public:
 		prev_data_size_ = 0;
 	}
 
+	~session() {
+		cout << my_id_ << "is disconnected\n";
+	}
+
+
 	void start()
 	{
 		do_read();
