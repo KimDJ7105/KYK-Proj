@@ -248,10 +248,10 @@ private:
 				auto& np = npcs[p_id];
 				if (!np->is_active) {
 					//npc를 active 시키고 타이머에 따라 움직이게 해야함
-					sc_packet_put_player put_npc; //플레이어 추가 패킷 준비
+					sc_packet_put_object put_npc; //플레이어 추가 패킷 준비
 					put_npc.id = np->id;
-					put_npc.size = sizeof(sc_packet_put_player);
-					put_npc.type = SC_PUT_PLAYER;
+					put_npc.size = sizeof(sc_packet_put_object);
+					put_npc.type = SC_PUT_OBJECT;
 					put_npc.x = np->pos_x;
 					put_npc.y = np->pos_y;
 
@@ -725,10 +725,10 @@ void MoveNpc(int npc_id)
 		if (0 == old_vl.count(pl)) {
 			// 플레이어의 시야에 등장
 
-			sc_packet_put_player npc_put; //플레이어 추가 패킷 준비
+			sc_packet_put_object npc_put; //플레이어 추가 패킷 준비
 			npc_put.id = npc_id;
-			npc_put.size = sizeof(sc_packet_put_player);
-			npc_put.type = SC_PUT_PLAYER;
+			npc_put.size = sizeof(sc_packet_put_object);
+			npc_put.type = SC_PUT_OBJECT;
 			npc_put.x = npcs[npc_id]->pos_x;
 			npc_put.y = npcs[npc_id]->pos_y;
 			players[pl]->Send_Packet(&npc_put);
