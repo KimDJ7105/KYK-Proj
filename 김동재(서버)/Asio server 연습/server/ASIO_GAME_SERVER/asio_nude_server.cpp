@@ -372,8 +372,10 @@ public:
 	session(tcp::socket socket, int new_id)
 		: socket_(std::move(socket)), my_id_(new_id)
 	{
-		pos_x = 0;
-		pos_y = 0;
+		pos_x = rand() % BOARD_WIDTH;
+		pos_y = rand() % BOARD_HEIGHT;
+		/*pos_x = 0;
+		pos_y = 0;*/
 		curr_packet_size_ = 0;
 		prev_data_size_ = 0;
 	}
