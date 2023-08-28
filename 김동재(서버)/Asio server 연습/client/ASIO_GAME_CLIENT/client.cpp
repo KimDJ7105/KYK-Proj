@@ -156,7 +156,7 @@ void ProcessPacket(char* ptr)
 		avatar.show();
 	}
 	break;
-
+	case SC_PUT_OBJECT:
 	case SC_PUT_PLAYER:
 	{
 		sc_packet_put_player* my_packet = reinterpret_cast<sc_packet_put_player*>(ptr);
