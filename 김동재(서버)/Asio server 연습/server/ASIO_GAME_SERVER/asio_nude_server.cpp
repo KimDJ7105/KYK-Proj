@@ -382,6 +382,7 @@ public:
 
 	~session() {
 		cout << my_id_ << "is disconnected\n";
+		socket_.close();
 	}
 
 
