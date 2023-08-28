@@ -588,7 +588,7 @@ int main()
 
 	Init_Server();
 
-	for (auto i = 0; i < 4; i++) worker_threads.emplace_back(worker_thread, &io_service);
+	for (auto i = 0; i < 8; i++) worker_threads.emplace_back(worker_thread, &io_service);
 	for (auto &th : worker_threads) th.join();
 	timer.join();
 }
@@ -805,14 +805,15 @@ void event_excuter(const boost::system::error_code& ec, boost::asio::steady_time
 				break;
 			case EC_SAY_HELLO :{
 				const shared_ptr<session> target_player = players[ev.target_id];
+				const auto npc = npcs[ev.obj_id];
 				if (nullptr == target_player) break;
-				npcs[ev.obj_id]->ll.lock();
-				auto L = npcs[ev.obj_id]->L;
+				npc->ll.lock();
+				auto L = npc->L;
 				lua_getglobal(L, "event_player_move");
 				lua_pushnumber(L, ev.target_id);
 				lua_pcall(L, 1, 0, 0);
-				lua_pop(L, 1);
-				npcs[ev.obj_id]->ll.unlock();
+				//lua_pop(L, 1);
+				npc->ll.unlock();
 			}
 				break;
 			}
