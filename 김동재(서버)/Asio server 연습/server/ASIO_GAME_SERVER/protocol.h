@@ -20,7 +20,6 @@
 
 #define MAX_STR_SIZE  100
 
-#define CS_MOVE
 #define CS_UP    1
 #define CS_DOWN  2
 #define CS_LEFT  3
