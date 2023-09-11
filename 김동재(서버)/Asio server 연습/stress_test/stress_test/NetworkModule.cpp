@@ -137,12 +137,12 @@ void ProcessPacket(int ci, unsigned char packet[])
 				g_clients[my_id].y = move_packet->y;
 			}
 			if (ci == my_id) {
-				/*if (0 != move_packet->move_time) {
+				if (0 != move_packet->move_time) {
 					auto d_ms = duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count() - move_packet->move_time;
 
 					if (global_delay < d_ms) global_delay++;
 					else if (global_delay > d_ms) global_delay--;
-				}*/
+				}
 			}
 		}
 	}
@@ -349,24 +349,28 @@ void Test_Thread()
 				cs_packet_up up_packet;
 				up_packet.size = sizeof(cs_packet_up);
 				up_packet.type = CS_UP;
+				up_packet.move_time = static_cast<unsigned>(duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count());
 				SendPacket(i, &up_packet);
 				break;
 			case 1: 
 				cs_packet_down down_packet;
 				down_packet.size = sizeof(cs_packet_down);
 				down_packet.type = CS_DOWN;
+				down_packet.move_time = static_cast<unsigned>(duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count());
 				SendPacket(i, &down_packet);
 				break;
 			case 2: 
 				cs_packet_left left_packet;
 				left_packet.size = sizeof(cs_packet_left);
 				left_packet.type = CS_LEFT;
+				left_packet.move_time = static_cast<unsigned>(duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count());
 				SendPacket(i, &left_packet);
 				break;
 			case 3:
 				cs_packet_right right_packet;
 				right_packet.size = sizeof(cs_packet_right);
 				right_packet.type = CS_RIGHT;
+				right_packet.move_time = static_cast<unsigned>(duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count());
 				SendPacket(i, &right_packet);
 				break;
 			}

@@ -144,6 +144,7 @@ private:
 	unsigned char packet_[max_length];
 	int curr_packet_size_;
 	int prev_data_size_;
+	unsigned int move_time;
 
 	bool can_see(int from, int to)
 	{
@@ -165,10 +166,41 @@ private:
 		int y = P->pos_y;
 		int x = P->pos_x;
 		switch (packet[1]) {
-			case CS_UP: y--; if (y < 0) y = 0; break;
-			case CS_DOWN: y++; if (y >= BOARD_HEIGHT) y = BOARD_HEIGHT - 1; break;
-			case CS_LEFT: x--; if (x < 0) x = 0; break;
-			case CS_RIGHT: x++; if (x >= BOARD_WIDTH) x = BOARD_WIDTH - 1; break;
+			case CS_UP: 
+				y--; if (y < 0) y = 0;
+				memcpy(&move_time, &packet[2], sizeof(move_time));
+				break;
+			case CS_DOWN:
+				y++; if (y >= BOARD_HEIGHT) y = BOARD_HEIGHT - 1;
+				memcpy(&move_time, &packet[2], sizeof(move_time));
+				break;
+			case CS_LEFT:
+				x--; if (x < 0) x = 0;
+				memcpy(&move_time, &packet[2], sizeof(move_time));
+				break;
+			case CS_RIGHT:
+				x++; if (x >= BOARD_WIDTH) x = BOARD_WIDTH - 1; 
+				memcpy(&move_time, &packet[2], sizeof(move_time));
+				break;
+			case CS_LOGOUT:
+				for (auto& [key, player] : players) {
+					const shared_ptr<session> p = player;
+					if (p == nullptr) continue; //로그아웃한 경우 넘김
+					if (p->my_id_ == id) continue; //자기 자신은 넣지 않음
+					if (!can_see(id, p->my_id_)) continue;
+
+					sc_packet_remove_player packet;
+
+					packet.id = my_id_;
+					packet.size = sizeof(p);
+					packet.type = SC_REMOVE_PLAYER;
+
+					p->Send_Packet(&packet);
+				}
+				socket_.close();
+				players[my_id_] = nullptr;
+				return;
+				break;
 			default: cout << "Invalid Packet From Client [" << id << "]\n"; system("pause"); exit(-1);
 		}
 		P->pos_x = x;
@@ -181,6 +213,7 @@ private:
 		sp_pos.type = SC_POS;
 		sp_pos.x = P->pos_x;
 		sp_pos.y = P->pos_y;
+		sp_pos.move_time = move_time;
 
 		sc_packet_put_player sp_put; //플레이어 추가 패킷 준비
 		sp_put.id = id;
@@ -197,7 +230,8 @@ private:
 		P->vl.unlock();
 
 		unordered_set<int> near_list; //이동한 뒤 시야 내의 오브젝트 리스트
-		for (auto& [key, p] : players) {
+		for (auto& [key, player] : players) {
+			const shared_ptr<session> p = player;
 			if (p == nullptr) continue; //로그아웃한 경우 넘김
 			if (p->my_id_ == id) continue; //자기 자신은 넣지 않음
 			if (can_see(id, p->my_id_)) //서로 볼 수 있는 경우 추가
@@ -222,14 +256,14 @@ private:
 				auto& cpl = players[p_id];
 
 				cpl->vl.lock();
-				if (players[p_id]->view_list.count(id)) {
+				if (cpl->view_list.count(id)) {
 					cpl->vl.unlock();
-					players[p_id]->Send_Packet(&sp_pos);
+					cpl->Send_Packet(&sp_pos);
 				}
 				else {
-					players[p_id]->view_list.insert(id);
+					cpl->view_list.insert(id);
 					cpl->vl.unlock();
-					players[p_id]->Send_Packet(&sp_put);
+					cpl->Send_Packet(&sp_put);
 
 				}
 				if (old_vlist.count(p_id) == 0) { //새로운 플레이어가 시야에 등장
@@ -266,6 +300,7 @@ private:
 				if (players[pl] == nullptr) continue;
 				if (pl == P->my_id_) continue;
 				if (0 == near_list.count(pl)) { //내 시야에서 다른 플레이어가 사라지면 서로 삭제(서로 시야가 같은 경우)
+					auto& p = players[pl];
 					sc_packet_remove_player sp_re1;
 					sp_re1.id = pl;
 					sp_re1.size = sizeof(sc_packet_remove_player);
@@ -276,10 +311,10 @@ private:
 					sp_re2.id = P->my_id_;
 					sp_re2.size = sizeof(sc_packet_remove_player);
 					sp_re2.type = SC_REMOVE_PLAYER;
-					players[pl]->Send_Packet(&sp_re2);
-					players[pl]->vl.lock();
-					players[pl]->view_list.erase(P->my_id_);
-					players[pl]->vl.unlock();
+					p->Send_Packet(&sp_re2);
+					p->vl.lock();
+					p->view_list.erase(P->my_id_);
+					p->vl.unlock();
 				}
 			}
 			else {
@@ -382,7 +417,6 @@ public:
 
 	~session() {
 		cout << my_id_ << "is disconnected\n";
-		socket_.close();
 	}
 
 

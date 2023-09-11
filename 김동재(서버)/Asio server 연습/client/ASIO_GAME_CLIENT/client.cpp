@@ -6,6 +6,7 @@
 #include <Windows.h>
 #include <chrono>
 using namespace std;
+using namespace chrono;
 
 #pragma comment (lib, "opengl32.lib")
 #pragma comment (lib, "winmm.lib")
@@ -156,6 +157,7 @@ void ProcessPacket(char* ptr)
 		avatar.show();
 	}
 	break;
+
 	case SC_PUT_OBJECT:
 	case SC_PUT_PLAYER:
 	{
@@ -172,7 +174,7 @@ void ProcessPacket(char* ptr)
 			players[id] = OBJECT{ *pieces, 0, 0, 64, 64 };
 			players[id].id = id;
 			players[id].move(my_packet->x, my_packet->y);
-			char str[100] = "NPC";
+			char str[100] = "PLAYER";
 			sprintf_s(str + strlen(str), sizeof(str) - strlen(str), "%d", id);
 			players[id].set_name(str);
 			players[id].show();
@@ -348,6 +350,7 @@ int main()
 					cs_packet_left p;
 					p.size = sizeof(p);
 					p.type = CS_LEFT;
+					p.move_time = static_cast<unsigned>(duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count());
 					send_packet(&p); 
 				}
 					break;
@@ -356,6 +359,7 @@ int main()
 					cs_packet_right p;
 					p.size = sizeof(p);
 					p.type = CS_RIGHT;
+					p.move_time = static_cast<unsigned>(duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count());
 					send_packet(&p);
 				}
 					break;
@@ -364,6 +368,7 @@ int main()
 					cs_packet_up p;
 					p.size = sizeof(p);
 					p.type = CS_UP;
+					p.move_time = static_cast<unsigned>(duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count());
 					send_packet(&p);
 				}
 					break;
@@ -372,10 +377,15 @@ int main()
 					cs_packet_down p;
 					p.size = sizeof(p);
 					p.type = CS_DOWN;
+					p.move_time = static_cast<unsigned>(duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count());
 					send_packet(&p);
 				}
 					break;
 				case sf::Keyboard::Escape:
+					cs_packet_logout p;
+					p.size = sizeof(p);
+					p.type = CS_LOGOUT;
+					send_packet(&p);
 					window.close();
 					break;
 				}
