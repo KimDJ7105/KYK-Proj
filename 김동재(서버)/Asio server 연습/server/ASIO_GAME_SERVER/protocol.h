@@ -11,10 +11,10 @@
 #define VIEW_RADIUS  3
 #define VIEW_RANGE   4
 
-#define MAX_USER 2000
+#define MAX_USER 10000
 
 #define NPC_START  2000
-#define NUM_OF_NPC  20000
+#define NUM_OF_NPC  2000
 
 #define MY_SERVER_PORT  4000
 
