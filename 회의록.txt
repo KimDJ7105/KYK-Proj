@@ -154,3 +154,50 @@
  * 조명 (Directional Light 한개)
 
 5. 현장실습해결
+
+
+2023-09-11
+-----------
+1. 진행상황
+ - 클라이언트 : Vulkan으로 처음부터 하겠다. (추천 책 : https://www.yes24.com/Product/Goods/55137611)
+  * 간단한 튜토리얼 샘플 복붙한 것이라도 일단 무조건 올리고 볼것.
+ - 기획
+  * 전뇌코어를 통한 부활/완전 사망
+  * 완전 사망을 통한 키카드 생성
+  * 완전 사망시 NPC 속도 증가로 인한 페널티
+ - 서버
+  * 로그아웃시 오류
+   - ASIO MICS에러  => Socket의 close()호출을 넣었더니 다른 에러로 변함
+    * shared_ptr를 제대로 사용하지 않아서 발생하는 오류
+    * shared_ptr로 객체를 관리할 경우, 다음과 같이 coding을 해야 한다,
+         
+            shared_ptr<OBJECT> obj_ptr = object_map[id];
+       if (nullptr == obj_ptr)
+          return;
+       obj_ptr->method1();  // 작업.
+       obj_ptr->method2();  // 작업.
+
+       잘못된 프로그래밍
+            object_map[id]->method1();
+       object_map[id]->method2();
+ 
+       
+   - SYSTEM 10009에러 => Close된 소켓에 대한 접근 오류
+    * 멀티쓰레드니까 다른 플레이어의 socket에 언제 close될지 알 수없고, close된 소켓에 대한 접근은 mutex를 빡세게 걸어 놓지 않으면 피할 수 없다.
+    * 해결책 : Player 객체를 shared_ptr로 관리한다. 그리고, socket은 close하지 않는다.  shared_ptr로 객체를 관리하면 다른 쓰레드에서 socket에 접근할 떄 destructor가 호출된 소켓에 접근하는 것이 원천적으로 차단된다.
+  - 
+
+2.  ToDo
+ - 클라이언트
+  * Vulkan으로 WASD이동, 총쏴서 원기둥 날리기
+ - 서버
+  * 소켓 로그아웃관련 오류 없애기 (모든 소스를 뒤져서, shared_ptr사용 방법을 올바르게 고칠 것)
+  * 스트레스 테스트에 1초에 100명 로그인/로그아웃 넣을 것
+ - 기획
+  * 기획 문서 보강
+  * 보드게임으로 만들어 보자 (플레이 장면을 찍어서 포트폴리오에 넣을 수 있게)
+  
+3. 다음 미팅
+ - 9월 25일 월요일 오후 7시
+ - ToDo 해오기
+
