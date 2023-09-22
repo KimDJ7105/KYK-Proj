@@ -148,8 +148,13 @@ private:
 
 	bool can_see(int from, int to)
 	{
-		if (abs(players[from]->pos_x - players[to]->pos_x) > VIEW_RANGE) return false;
-		return abs(players[from]->pos_y - players[to]->pos_y) <= VIEW_RANGE;
+		shared_ptr<session> p1 = players[from];
+		shared_ptr<session> p2 = players[to];
+		if (nullptr == p1) return false;
+		if (nullptr == p2) return false;
+
+		if (abs(p1->pos_x - p2->pos_x) > VIEW_RANGE) return false;
+		return abs(p1->pos_y - p2->pos_y) <= VIEW_RANGE;
 	}
 
 	void Send_Packet(void *packet, unsigned id)
@@ -157,12 +162,20 @@ private:
 		int packet_size = reinterpret_cast<unsigned char *>(packet)[0];
 		unsigned char *buff = new unsigned char[packet_size];
 		memcpy(buff, packet, packet_size);
-		players[id]->do_write(buff, packet_size);
+
+		shared_ptr<session> player = players[id];
+
+		if (nullptr == player) return;
+
+		player->do_write(buff, packet_size);
 	}
 
 	void Process_Packet(unsigned char *packet, int id)
 	{
-		auto P= players[id];
+		shared_ptr<session> P= players[id];
+
+		if (nullptr == P) return;
+
 		int y = P->pos_y;
 		int x = P->pos_x;
 		switch (packet[1]) {
@@ -197,7 +210,6 @@ private:
 
 					p->Send_Packet(&packet);
 				}
-				socket_.close();
 				players[my_id_] = nullptr;
 				return;
 				break;
@@ -239,10 +251,12 @@ private:
 		}
 
 		for (auto& [key, npc] : npcs) {
-			if (npc == nullptr) continue;
-			if (can_see_npc(id, npc->id)) {
-				near_list.insert(npc->id);
-				if (npc->state == ST_IDLE) {
+			shared_ptr<NPC> n = npc;
+			if (n == nullptr) continue;
+
+			if (can_see_npc(id, n->id)) {
+				near_list.insert(n->id);
+				if (n->state == ST_IDLE) {
 					TIMER_EVENT ev{ key, chrono::system_clock::now() + 1s, EV_SAY_HELLO, id };
 					timer_queue.push(ev);
 				}
@@ -252,8 +266,9 @@ private:
 
 		for (auto& p_id : near_list) { //near_list 유저 처리
 			if (p_id < MAX_USER) {
-				if (players[p_id] == nullptr) continue;
-				auto& cpl = players[p_id];
+				shared_ptr<session> cpl = players[p_id];
+
+				if (cpl == nullptr) continue;
 
 				cpl->vl.lock();
 				if (cpl->view_list.count(id)) {
@@ -267,19 +282,23 @@ private:
 
 				}
 				if (old_vlist.count(p_id) == 0) { //새로운 플레이어가 시야에 등장
+					shared_ptr<session> pl = players[p_id];
+					if (nullptr == pl) continue;
+
 					sc_packet_put_player sp_put_o;
 					sp_put_o.id = p_id;
 					sp_put_o.size = sizeof(sc_packet_put_player);
 					sp_put_o.type = SC_PUT_PLAYER;
-					sp_put_o.x = players[p_id]->pos_x;
-					sp_put_o.y = players[p_id]->pos_y;
+					sp_put_o.x = pl->pos_x;
+					sp_put_o.y = pl->pos_y;
 
 					P->Send_Packet(&sp_put_o);
 				}
 			}
 			else { //near_list npc 처리
-				if (npcs[p_id] == nullptr) continue;
-				auto& np = npcs[p_id];
+				shared_ptr<NPC>np = npcs[p_id];
+				if (np == nullptr) continue;
+
 				if (!np->is_active) {
 					//npc를 active 시키고 타이머에 따라 움직이게 해야함
 					sc_packet_put_object put_npc; //플레이어 추가 패킷 준비
@@ -297,10 +316,11 @@ private:
 
 		for (auto& pl : old_vlist) { //플레이어 삭제처리
 			if (pl < MAX_USER) {
-				if (players[pl] == nullptr) continue;
+				shared_ptr<session> p = players[pl];
+				if (p == nullptr) continue;
 				if (pl == P->my_id_) continue;
 				if (0 == near_list.count(pl)) { //내 시야에서 다른 플레이어가 사라지면 서로 삭제(서로 시야가 같은 경우)
-					auto& p = players[pl];
+	
 					sc_packet_remove_player sp_re1;
 					sp_re1.id = pl;
 					sp_re1.size = sizeof(sc_packet_remove_player);
@@ -318,7 +338,9 @@ private:
 				}
 			}
 			else {
-				if (npcs[pl] == nullptr) continue;
+				shared_ptr<NPC> np = npcs[pl];
+
+				if (np == nullptr) continue;
 				if (0 == near_list.count(pl)) {
 					sc_packet_remove_player remove_npc;
 					remove_npc.id = pl;
@@ -441,33 +463,39 @@ public:
 
 		// 나의 접속을 모든 플레이어에게 알림
 		for (auto& [key,pl] : players) {
-			if (pl == nullptr) continue;
-			if (can_see(pl->my_id_, my_id_)) {
-				pl->Send_Packet(&p);
-				pl->vl.lock();
-				pl->view_list.insert(my_id_);
-				pl->vl.unlock();
+			shared_ptr<session> player = pl;
+
+			if (player == nullptr) continue;
+			if (can_see(player->my_id_, my_id_)) {
+				player->Send_Packet(&p);
+				player->vl.lock();
+				player->view_list.insert(my_id_);
+				player->vl.unlock();
 			}
 		}
 		// 나에게 접속해 있는 다른 플레이어 정보를 전송
 		// 나에게 주위에 있는 NPC의 정보를 전송
 		for (auto &pl : players) {
-			if (pl.second == nullptr) continue;
-			if (pl.second->my_id_ == my_id_) continue;
-			if (can_see(pl.second->my_id_, my_id_)) {
-				p.id = pl.second->my_id_;
-				p.x = pl.second->pos_x;
-				p.y = pl.second->pos_y;
+			shared_ptr<session> player = pl.second;
+
+			if (player == nullptr) continue;
+			if (player->my_id_ == my_id_) continue;
+			if (can_see(player->my_id_, my_id_)) {
+				p.id = player->my_id_;
+				p.x = player->pos_x;
+				p.y = player->pos_y;
 				Send_Packet(&p);
-				view_list.insert(pl.second->my_id_);
+				view_list.insert(player->my_id_);
 			}
 		}
 
 		for (auto& [key, npc] : npcs) {
 			if (can_see_npc(my_id_, key)) {
+				shared_ptr<NPC> n = npc;
+
 				p.id = key;
-				p.x = npc->pos_x;
-				p.y = npc->pos_y;
+				p.x = n->pos_x;
+				p.y = n->pos_y;
 				Send_Packet(&p);
 				view_list.insert(key);
 
@@ -500,7 +528,13 @@ private:
 				{
 					int p_id = GetNewClientID();
 					players[p_id] = std::make_shared<session>(std::move(socket_), p_id);
-					players[p_id]->start();
+
+					shared_ptr<session> pl = players[p_id];
+					if (nullptr == pl) {
+						exit(1);
+					}
+
+					pl->start();
 					do_accept();
 				}
 		});
@@ -515,7 +549,9 @@ private:
 			int id = i + MAX_USER;
 			npcs[id] = std::make_shared<NPC>(std::move(socket_), id, x, y);
 			
-			auto L = npcs[id]->L = luaL_newstate();
+			shared_ptr<NPC> n = npcs[id];
+
+			auto L = n->L = luaL_newstate();
 
 			luaL_openlibs(L);
 			luaL_loadfile(L, "npc.lua");
@@ -571,8 +607,11 @@ void timer_thread()
 				continue;
 			}
 			switch (ev.event_id) {
-			case EV_RANDOM_MOVE:
-				if (npcs[ev.obj_id]->state != ST_IDLE) {
+			case EV_RANDOM_MOVE: {
+				shared_ptr<NPC> n = npcs[ev.obj_id];
+				if (nullptr == n) break;
+
+				if (n->state != ST_IDLE) {
 					TIMER_EVENT n_ev{ ev.obj_id, chrono::system_clock::now() + 1s, EV_RANDOM_MOVE, 0 };
 					timer_queue.push(n_ev);
 					break;
@@ -584,6 +623,7 @@ void timer_thread()
 
 				event_queue.push(move_event);
 				break;
+				}
 			case EV_SAY_BYE: {
 				EVENT bye_event;
 				bye_event.event_id = EC_SAY_BYE;
@@ -696,9 +736,12 @@ int API_SendMessage(lua_State* L)
 	packet.type = SC_CHAT;
 	strcpy_s(packet.message, mess);
 
-	players[user_id]->Send_Packet(&packet);
+	shared_ptr<session> pl = players[user_id];
+	if (nullptr == pl) return 1;
+	pl->Send_Packet(&packet);
 	
-	npcs[my_id]->state = ST_HELLO;
+	shared_ptr<NPC> npc = npcs[my_id];
+	npc->state = ST_HELLO;
 
 	TIMER_EVENT ev{ my_id, chrono::system_clock::now() + 3s, EV_SAY_BYE, user_id };
 	timer_queue.push(ev);
@@ -709,10 +752,14 @@ int API_SendMessage(lua_State* L)
 void wakeupNPC(int n_id)
 {
 	if (n_id < MAX_USER) return;
-	if (npcs[n_id]->is_active) return;
+
+	shared_ptr<NPC> npc = npcs[n_id];
+	if (nullptr == npc) return;
+
+	if (npc->is_active) return;
 	bool old_state = false;
 
-	if (false == atomic_compare_exchange_strong(&npcs[n_id]->is_active, &old_state, true))
+	if (false == atomic_compare_exchange_strong(&npc->is_active, &old_state, true))
 		return;
 	//타이머 이벤트 생성하고 우선순위 큐에 넣기
 	TIMER_EVENT ev{ n_id, chrono::system_clock::now(), EV_RANDOM_MOVE, 0 };
@@ -721,8 +768,14 @@ void wakeupNPC(int n_id)
 
 bool can_see_npc(int from, int to)
 {
-	if (abs(players[from]->pos_x - npcs[to]->pos_x) > VIEW_RANGE) return false;
-	return abs(players[from]->pos_y - npcs[to]->pos_y) <= VIEW_RANGE;
+	shared_ptr<session> pl = players[from];
+	if (nullptr == pl) return false;
+
+	shared_ptr<NPC> np = npcs[to];
+	if (nullptr == np) return false;
+
+	if (abs(pl->pos_x - np->pos_x) > VIEW_RANGE) return false;
+	return abs(pl->pos_y - np->pos_y) <= VIEW_RANGE;
 }
 
 void MoveNpc(int npc_id)
@@ -730,25 +783,30 @@ void MoveNpc(int npc_id)
 
 	unordered_set<int> old_vl;
 	for (auto& [key, p] : players) {
-		if (p == nullptr) continue;
+		shared_ptr<session> pl = p;
+		if (pl == nullptr) continue;
 		if (can_see_npc(key, npc_id))
 			old_vl.insert(key);
 	}
 
-	int x = npcs[npc_id]->pos_x;
-	int y = npcs[npc_id]->pos_y;
+	shared_ptr<NPC> npc = npcs[npc_id];
+	if (nullptr == npc) return;
+
+	int x = npc->pos_x;
+	int y = npc->pos_y;
 	switch (rand() % 4) {
 	case 0: if (x < (BOARD_WIDTH - 1)) x++; break;
 	case 1: if (x > 0) x--; break;
 	case 2: if (y < (BOARD_HEIGHT - 1)) y++; break;
 	case 3:if (y > 0) y--; break;
 	}
-	npcs[npc_id]->pos_x = x;
-	npcs[npc_id]->pos_y = y;
+	npc->pos_x = x;
+	npc->pos_y = y;
 
 	unordered_set<int> new_vl;
 	for (auto& [key, p] : players) {
-		if (p == nullptr) continue;
+		shared_ptr<session> pl = p;
+		if (pl == nullptr) continue;
 		if (can_see_npc(key, npc_id)) {
 			new_vl.insert(key);
 			TIMER_EVENT ev{ npc_id, chrono::system_clock::now() + 1s, EV_SAY_HELLO, key };
@@ -764,9 +822,13 @@ void MoveNpc(int npc_id)
 			npc_put.id = npc_id;
 			npc_put.size = sizeof(sc_packet_put_object);
 			npc_put.type = SC_PUT_OBJECT;
-			npc_put.x = npcs[npc_id]->pos_x;
-			npc_put.y = npcs[npc_id]->pos_y;
-			players[pl]->Send_Packet(&npc_put);
+			npc_put.x = npc->pos_x;
+			npc_put.y = npc->pos_y;
+
+			shared_ptr<session> player = players[pl];
+			if (nullptr == player) continue;
+
+			player->Send_Packet(&npc_put);
 		}
 		else {
 			// 플레이어가 계속 보고 있음.
@@ -775,35 +837,43 @@ void MoveNpc(int npc_id)
 			npc_pos.id = npc_id;
 			npc_pos.size = sizeof(sc_packet_pos);
 			npc_pos.type = SC_POS;
-			npc_pos.x = npcs[npc_id]->pos_x;
-			npc_pos.y = npcs[npc_id]->pos_y;
+			npc_pos.x = npc->pos_x;
+			npc_pos.y = npc->pos_y;
 
-			players[pl]->Send_Packet(&npc_pos);
+			shared_ptr<session> player = players[pl];
+			if (nullptr == player) continue;
+
+			player->Send_Packet(&npc_pos);
+
 		}
 	}
 	//삭제
 	for (auto pl : old_vl) {
 		if (0 == new_vl.count(pl)) {
-			players[pl]->vl.lock();
-			if (0 != players[pl]->view_list.count(npc_id)) {
-				players[pl]->vl.unlock();
+			shared_ptr<session> player = players[pl];
+			
+			if (player == nullptr) continue;
+
+			player->vl.lock();
+			if (0 != player->view_list.count(npc_id)) {
+				player->vl.unlock();
 				sc_packet_remove_player npc_remove;
 
 				npc_remove.id = npc_id;
 				npc_remove.size = sizeof(sc_packet_remove_player);
 				npc_remove.type = SC_REMOVE_PLAYER;
 
-				players[pl]->Send_Packet(&npc_remove);
+				player->Send_Packet(&npc_remove);
 			}
 			else {
-				players[pl]->vl.unlock();
+				player->vl.unlock();
 			}
 		}
 
 	}
 
 	if (new_vl.size() == 0) {
-		npcs[npc_id]->is_active = false;
+		npc->is_active = false;
 	}
 
 	else {
@@ -825,9 +895,13 @@ void event_excuter(const boost::system::error_code& ec, boost::asio::steady_time
 				break;
 			case EC_SAY_BYE: {
 				const shared_ptr<session> target_player = players[ev.target_id];
-				if (nullptr == target_player)
-					break;
-				npcs[ev.obj_id]->state = ST_IDLE;
+				if (nullptr == target_player) break;
+
+				shared_ptr<NPC> np = npcs[ev.obj_id];
+
+				if (nullptr == np) break;
+
+				np->state = ST_IDLE;
 				sc_packet_chat packet;
 				packet.id = ev.obj_id;
 				packet.size = sizeof(sc_packet_chat);
@@ -839,8 +913,10 @@ void event_excuter(const boost::system::error_code& ec, boost::asio::steady_time
 				break;
 			case EC_SAY_HELLO :{
 				const shared_ptr<session> target_player = players[ev.target_id];
-				const auto npc = npcs[ev.obj_id];
 				if (nullptr == target_player) break;
+				const shared_ptr<NPC> npc = npcs[ev.obj_id];
+				if (nullptr == npc) break;
+
 				npc->ll.lock();
 				auto L = npc->L;
 				lua_getglobal(L, "event_player_move");
