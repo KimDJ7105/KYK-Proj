@@ -527,12 +527,13 @@ private:
 				if (!ec)
 				{
 					int p_id = GetNewClientID();
-					players[p_id] = std::make_shared<session>(std::move(socket_), p_id);
-
-					shared_ptr<session> pl = players[p_id];
+					//players[p_id] = std::make_shared<session>(std::move(socket_), p_id);
+					//shared_ptr<session> pl = players[p_id];
+					auto pl = std::make_shared<session>(std::move(socket_), p_id);
 					if (nullptr == pl) {
 						exit(1);
 					}
+					players[p_id] = pl;
 
 					pl->start();
 					do_accept();
