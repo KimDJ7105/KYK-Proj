@@ -60,6 +60,7 @@ struct CLIENT {
 
 array<int, MAX_CLIENTS> client_map;
 array<CLIENT, MAX_CLIENTS> g_clients;
+array<CLIENT, 100> repeat_log_clients;
 atomic_int num_connections;
 atomic_int client_to_close;
 atomic_int active_clients;
@@ -333,7 +334,42 @@ fail_to_connect:
 
 void Test_Thread()
 {
+	auto startTime = std::chrono::steady_clock::now();
+
 	while (true) {
+
+		auto currentTime = std::chrono::steady_clock::now();
+
+		std::chrono::duration<double> elapsedSeconds = currentTime - startTime;
+
+		if (elapsedSeconds.count() >= 1.0) {
+			SOCKADDR_IN ServerAddr;
+			ZeroMemory(&ServerAddr, sizeof(SOCKADDR_IN));
+			ServerAddr.sin_family = AF_INET;
+			ServerAddr.sin_port = htons(MY_SERVER_PORT);
+			ServerAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+			for (int i = 0; i < 100; ++i) {
+				repeat_log_clients[i].client_socket = WSASocketW(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
+
+				int Result = WSAConnect(g_clients[num_connections].client_socket, (sockaddr*)&ServerAddr, sizeof(ServerAddr), NULL, NULL, NULL, NULL);
+				if (0 != Result) {
+					error_display("WSAConnect : ", GetLastError());
+				}
+			}
+
+			for (int i = 0; i < 100; ++i) {
+				bool status = true;
+				if (true == atomic_compare_exchange_strong(&repeat_log_clients[i].connected, &status, false)) {
+					closesocket(repeat_log_clients[i].client_socket);
+					active_clients--;
+				}
+			}
+
+		}
+
+		startTime = std::chrono::steady_clock::now();
+
 		//Sleep(max(20, global_delay));
 		Adjust_Number_Of_Client();
 
