@@ -52,6 +52,9 @@ namespace lve {
 		lveWindow->framebufferResized = true;
 		lveWindow->width = width;
 		lveWindow->height = height;
+
+		// VULKAN에서 window size dependent 객체들을 다 날리고, 새로 생성해야 한다.
+
 	}
 
 }	// namespace lve
