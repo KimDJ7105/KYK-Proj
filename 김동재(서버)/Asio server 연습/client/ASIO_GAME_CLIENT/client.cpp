@@ -12,7 +12,7 @@ using namespace chrono;
 #pragma comment (lib, "winmm.lib")
 #pragma comment (lib, "ws2_32.lib")
 
-#include "..\..\server\ASIO_GAME_SERVER\protocol.h"
+#include "C:\Users\rlaeh\source\repos\ASIO_GAME_SERVER\ASIO_GAME_SERVER\protocol.h"
 
 sf::TcpSocket s_socket;
 
@@ -276,16 +276,16 @@ void ProcessPacket(char* ptr)
 		
 		if (my_packet->shoter_id == g_myid) {
 			if (my_packet->target_id < MAX_USER) {
-				std::cout << "ï¿½ï¿½ï¿½ï¿½ï¿½ Player" << my_packet->target_id << "ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.\n";
+				std::cout << "´ç½ÅÀÌ Player" << my_packet->target_id << "¸¦ ½ú½À´Ï´Ù.\n";
 			}
 
 			else {
-				std::cout << "ï¿½ï¿½ï¿½ï¿½ï¿½ NPC" << my_packet->target_id << "ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.\n";
+				std::cout << "´ç½ÅÀÌ NPC" << my_packet->target_id << "¸¦ ½ú½À´Ï´Ù.\n";
 			}
 		}
 
 		else {
-			std::cout << "Player" << my_packet->shoter_id << "ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.\n";
+			std::cout << "Player" << my_packet->shoter_id << "°¡ ´ç½ÅÀ» ½ú½À´Ï´Ù.\n";
 		}
 		break;
 	}
