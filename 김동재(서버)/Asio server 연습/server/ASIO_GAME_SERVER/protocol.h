@@ -23,9 +23,10 @@
 #define CS_UP    1
 #define CS_DOWN  2
 #define CS_LEFT  3
-#define CS_RIGHT    4
-#define CS_CHAT		5
-#define CS_LOGOUT 6
+#define CS_RIGHT 4
+#define CS_SPACE 5
+#define CS_CHAT  6
+#define CS_LOGOUT 7
 
 #define SC_POS           1
 #define SC_PUT_PLAYER    2
@@ -33,6 +34,12 @@
 #define SC_REMOVE_PLAYER 4
 #define SC_CHAT			 5
 #define SC_LOGIN_INFO	 6
+#define SC_TARGET_HIT    7
+
+#define	VIEW_UP 1
+#define VIEW_DOWN 2
+#define VIEW_LEFT 3
+#define VIEW_RIGHT 4
 
 #pragma pack (push, 1)
 
@@ -60,6 +67,11 @@ struct cs_packet_right {
 	unsigned int move_time;
 };
 
+struct cs_packet_space {
+	BYTE size;
+	BYTE type;
+};
+
 struct cs_packet_chat {
 	BYTE size;
 	BYTE type;
@@ -77,6 +89,7 @@ struct sc_packet_pos {
 	WORD id;
 	WORD x;
 	WORD y;
+	WORD view_dir;
 	unsigned int move_time;
 };
 
@@ -86,6 +99,7 @@ struct sc_packet_put_player {
 	WORD id;
 	WORD x;
 	WORD y;
+	WORD view_dir;
 };
 
 struct sc_packet_put_object {
@@ -94,6 +108,7 @@ struct sc_packet_put_object {
 	WORD id;
 	WORD x;
 	WORD y;
+	WORD view_dir;
 };
 
 struct sc_packet_login_info {
@@ -115,6 +130,17 @@ struct sc_packet_chat {
 	BYTE type;
 	WORD id;
 	char message[MAX_STR_SIZE];
+};
+
+struct sc_packet_target_hit {
+	BYTE size;
+	BYTE type;
+	WORD shoter_id;
+	WORD target_id;
+	WORD shoter_x;
+	WORD shoter_y;
+	WORD target_x;
+	WORD target_y;
 };
 
 #pragma pack (pop)

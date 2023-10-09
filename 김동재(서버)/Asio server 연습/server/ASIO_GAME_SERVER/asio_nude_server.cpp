@@ -170,6 +170,163 @@ private:
 		player->do_write(buff, packet_size);
 	}
 
+	void serch_target(int shoter_id) 
+	{
+		shared_ptr<session> P = players[shoter_id];
+
+		P->vl.lock();
+		unordered_set<int> vlist = P->view_list;
+		P->vl.unlock();
+
+		for (auto& key : vlist) {
+			if (key < MAX_USER) {
+				shared_ptr<session> target = players[key];
+				if (target == NULL) continue;
+				switch (P->view_dir) {
+				case VIEW_UP:
+					if (target->pos_x == P->pos_x && target->pos_y < P->pos_y) {
+						sc_packet_target_hit hit_p;
+						hit_p.size = sizeof(hit_p);
+						hit_p.type = SC_TARGET_HIT;
+						hit_p.shoter_id = P->my_id_;
+						hit_p.target_id = target->my_id_;
+						hit_p.shoter_x = P->pos_x;
+						hit_p.shoter_y = P->pos_y;
+						hit_p.target_x = target->pos_x;
+						hit_p.target_y = target->pos_y;
+
+						P->Send_Packet(&hit_p);
+						target->Send_Packet(&hit_p);
+						return;
+					}
+					break;
+				case VIEW_DOWN:
+					if (target->pos_x == P->pos_x && target->pos_y > P->pos_y) {
+						sc_packet_target_hit hit_p;
+						hit_p.size = sizeof(hit_p);
+						hit_p.type = SC_TARGET_HIT;
+						hit_p.shoter_id = P->my_id_;
+						hit_p.target_id = target->my_id_;
+						hit_p.shoter_x = P->pos_x;
+						hit_p.shoter_y = P->pos_y;
+						hit_p.target_x = target->pos_x;
+						hit_p.target_y = target->pos_y;
+
+						P->Send_Packet(&hit_p);
+						target->Send_Packet(&hit_p);
+						return;
+					}
+					break;
+				case VIEW_LEFT:
+					if (target->pos_y == P->pos_y && target->pos_x < P->pos_x) {
+						sc_packet_target_hit hit_p;
+						hit_p.size = sizeof(hit_p);
+						hit_p.type = SC_TARGET_HIT;
+						hit_p.shoter_id = P->my_id_;
+						hit_p.target_id = target->my_id_;
+						hit_p.shoter_x = P->pos_x;
+						hit_p.shoter_y = P->pos_y;
+						hit_p.target_x = target->pos_x;
+						hit_p.target_y = target->pos_y;
+
+						P->Send_Packet(&hit_p);
+						target->Send_Packet(&hit_p);
+						return;
+					}
+					break;
+				case VIEW_RIGHT:
+					if (target->pos_y == P->pos_y && target->pos_x > P->pos_x) {
+						sc_packet_target_hit hit_p;
+						hit_p.size = sizeof(hit_p);
+						hit_p.type = SC_TARGET_HIT;
+						hit_p.shoter_id = P->my_id_;
+						hit_p.target_id = target->my_id_;
+						hit_p.shoter_x = P->pos_x;
+						hit_p.shoter_y = P->pos_y;
+						hit_p.target_x = target->pos_x;
+						hit_p.target_y = target->pos_y;
+
+						P->Send_Packet(&hit_p);
+						target->Send_Packet(&hit_p);
+						return;
+					}
+					break;
+				}
+			}
+
+			else {
+				shared_ptr<NPC> target = npcs[key];
+				if (target == NULL) continue;
+				switch (P->view_dir) {
+				case VIEW_UP:
+					if (target->pos_x == P->pos_x && target->pos_y < P->pos_y) {
+						sc_packet_target_hit hit_p;
+						hit_p.size = sizeof(hit_p);
+						hit_p.type = SC_TARGET_HIT;
+						hit_p.shoter_id = P->my_id_;
+						hit_p.target_id = target->id;
+						hit_p.shoter_x = P->pos_x;
+						hit_p.shoter_y = P->pos_y;
+						hit_p.target_x = target->pos_x;
+						hit_p.target_y = target->pos_y;
+
+						P->Send_Packet(&hit_p);
+						return;
+					}
+					break;
+				case VIEW_DOWN:
+					if (target->pos_x == P->pos_x && target->pos_y > P->pos_y) {
+						sc_packet_target_hit hit_p;
+						hit_p.size = sizeof(hit_p);
+						hit_p.type = SC_TARGET_HIT;
+						hit_p.shoter_id = P->my_id_;
+						hit_p.target_id = target->id;
+						hit_p.shoter_x = P->pos_x;
+						hit_p.shoter_y = P->pos_y;
+						hit_p.target_x = target->pos_x;
+						hit_p.target_y = target->pos_y;
+
+						P->Send_Packet(&hit_p);
+						return;
+					}
+					break;
+				case VIEW_LEFT:
+					if (target->pos_y == P->pos_y && target->pos_x < P->pos_x) {
+						sc_packet_target_hit hit_p;
+						hit_p.size = sizeof(hit_p);
+						hit_p.type = SC_TARGET_HIT;
+						hit_p.shoter_id = P->my_id_;
+						hit_p.target_id = target->id;
+						hit_p.shoter_x = P->pos_x;
+						hit_p.shoter_y = P->pos_y;
+						hit_p.target_x = target->pos_x;
+						hit_p.target_y = target->pos_y;
+
+						P->Send_Packet(&hit_p);
+						return;
+					}
+					break;
+				case VIEW_RIGHT:
+					if (target->pos_y == P->pos_y && target->pos_x > P->pos_x) {
+						sc_packet_target_hit hit_p;
+						hit_p.size = sizeof(hit_p);
+						hit_p.type = SC_TARGET_HIT;
+						hit_p.shoter_id = P->my_id_;
+						hit_p.target_id = target->id;
+						hit_p.shoter_x = P->pos_x;
+						hit_p.shoter_y = P->pos_y;
+						hit_p.target_x = target->pos_x;
+						hit_p.target_y = target->pos_y;
+
+						P->Send_Packet(&hit_p);
+						return;
+					}
+					break;
+				}
+			}
+		}
+	}
+
 	void Process_Packet(unsigned char *packet, int id)
 	{
 		shared_ptr<session> P= players[id];
@@ -181,19 +338,26 @@ private:
 		switch (packet[1]) {
 			case CS_UP: 
 				y--; if (y < 0) y = 0;
+				view_dir = VIEW_UP;
 				memcpy(&move_time, &packet[2], sizeof(move_time));
 				break;
 			case CS_DOWN:
 				y++; if (y >= BOARD_HEIGHT) y = BOARD_HEIGHT - 1;
+				view_dir = VIEW_DOWN;
 				memcpy(&move_time, &packet[2], sizeof(move_time));
 				break;
 			case CS_LEFT:
 				x--; if (x < 0) x = 0;
+				view_dir = VIEW_LEFT;
 				memcpy(&move_time, &packet[2], sizeof(move_time));
 				break;
 			case CS_RIGHT:
 				x++; if (x >= BOARD_WIDTH) x = BOARD_WIDTH - 1; 
+				view_dir = VIEW_RIGHT;
 				memcpy(&move_time, &packet[2], sizeof(move_time));
+				break;
+			case CS_SPACE: 
+				serch_target(P->my_id_);
 				break;
 			case CS_LOGOUT:
 				for (auto& [key, player] : players) {
@@ -226,6 +390,7 @@ private:
 		sp_pos.x = P->pos_x;
 		sp_pos.y = P->pos_y;
 		sp_pos.move_time = move_time;
+		sp_pos.view_dir = P->view_dir;
 
 		sc_packet_put_player sp_put; //플레이어 추가 패킷 준비
 		sp_put.id = id;
@@ -233,6 +398,7 @@ private:
 		sp_put.type = SC_PUT_PLAYER;
 		sp_put.x = P->pos_x;
 		sp_put.y = P->pos_y;
+		sp_put.view_dir = P->view_dir;
 
 		P->Send_Packet(&sp_pos); //본인이 이동함을 전달
 
@@ -291,6 +457,7 @@ private:
 					sp_put_o.type = SC_PUT_PLAYER;
 					sp_put_o.x = pl->pos_x;
 					sp_put_o.y = pl->pos_y;
+					sp_put_o.view_dir = pl->view_dir;
 
 					P->Send_Packet(&sp_put_o);
 				}
@@ -307,6 +474,7 @@ private:
 					put_npc.type = SC_PUT_OBJECT;
 					put_npc.x = np->pos_x;
 					put_npc.y = np->pos_y;
+					put_npc.view_dir = 0;
 
 					P->Send_Packet(&put_npc);
 					wakeupNPC(p_id);
@@ -422,6 +590,7 @@ private:
 public:
 	int pos_x;
 	int pos_y;
+	int view_dir;
 
 	unordered_set<int> view_list;
 	mutex vl;
@@ -431,6 +600,7 @@ public:
 	{
 		pos_x = rand() % BOARD_WIDTH;
 		pos_y = rand() % BOARD_HEIGHT;
+		view_dir = VIEW_LEFT;
 		/*pos_x = 0;
 		pos_y = 0;*/
 		curr_packet_size_ = 0;

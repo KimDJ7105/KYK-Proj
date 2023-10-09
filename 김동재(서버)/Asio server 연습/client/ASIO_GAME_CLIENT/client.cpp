@@ -1,8 +1,8 @@
-
 #include <SFML/Graphics.hpp>
 #include <SFML/Network.hpp>
 #include <iostream>
 #include <unordered_map>
+#include <vector>
 #include <Windows.h>
 #include <chrono>
 using namespace std;
@@ -29,9 +29,19 @@ constexpr int BUF_SIZE = 4096;
 int g_left_x;
 int g_top_y;
 int g_myid;
+unsigned int last_shot_time;
+
 
 sf::RenderWindow* g_window;
 sf::Font g_font;
+
+struct LINES {
+	sf::VertexArray line[5];
+	int tic_count[5];
+	int g_line_count = 0;
+};
+
+LINES g_line;
 
 class OBJECT {
 private:
@@ -107,6 +117,11 @@ public:
 		m_chat.setStyle(sf::Text::Bold);
 		m_mess_end_time = chrono::system_clock::now() + chrono::seconds(3);
 	}
+	
+	void set_sprite(int x, int y, int x2, int y2)
+	{
+		m_sprite.setTextureRect(sf::IntRect(x, y, x2, y2));
+	}
 };
 
 OBJECT avatar;
@@ -123,7 +138,7 @@ void client_initialize()
 	board = new sf::Texture;
 	pieces = new sf::Texture;
 	board->loadFromFile("chessmap.bmp");
-	pieces->loadFromFile("chess2.png");
+	pieces->loadFromFile("chess3.png");
 	if (false == g_font.loadFromFile("cour.ttf")) {
 		cout << "Font Loading Error!\n";
 		exit(-1);
@@ -132,6 +147,7 @@ void client_initialize()
 	black_tile = OBJECT{ *board, 69, 5, TILE_WIDTH, TILE_WIDTH };
 	avatar = OBJECT{ *pieces, 128, 0, 64, 64 };
 	avatar.move(4, 4);
+	last_shot_time = static_cast<unsigned>(duration_cast<seconds>(high_resolution_clock::now().time_since_epoch()).count());
 }
 
 void client_finish()
@@ -171,7 +187,10 @@ void ProcessPacket(char* ptr)
 			avatar.show();
 		}
 		else if (id < MAX_USER) {
-			players[id] = OBJECT{ *pieces, 0, 0, 64, 64 };
+			if (my_packet->view_dir == VIEW_UP) players[id] = OBJECT{ *pieces, 0, 0, 64, 64 };
+			if (my_packet->view_dir == VIEW_DOWN) players[id] = OBJECT{ *pieces, 64, 0, 64, 64 };
+			if (my_packet->view_dir == VIEW_LEFT) players[id] = OBJECT{ *pieces, 128, 0, 64, 64 };
+			if (my_packet->view_dir == VIEW_RIGHT) players[id] = OBJECT{ *pieces, 192, 0, 64, 64 };
 			players[id].id = id;
 			players[id].move(my_packet->x, my_packet->y);
 			char str[100] = "PLAYER";
@@ -180,7 +199,7 @@ void ProcessPacket(char* ptr)
 			players[id].show();
 		}
 		else {
-			players[id] = OBJECT{ *pieces, 0, 0, 64, 64 };
+			players[id] = OBJECT{ *pieces, 256, 0, 64, 64 };
 			players[id].id = id;
 			players[id].move(my_packet->x, my_packet->y);
 			players[id].set_name("NPC");
@@ -198,6 +217,10 @@ void ProcessPacket(char* ptr)
 			g_top_y = my_packet->y - SCREEN_HEIGHT/2;
 		}
 		else {
+			if (my_packet->view_dir == VIEW_UP) players[other_id].set_sprite(0, 0, 64, 64);
+			if (my_packet->view_dir == VIEW_DOWN) players[other_id].set_sprite(64, 0, 64, 64);
+			if (my_packet->view_dir == VIEW_LEFT) players[other_id].set_sprite(128, 0, 64, 64);
+			if (my_packet->view_dir == VIEW_RIGHT) players[other_id].set_sprite(192, 0, 64, 64);
 			players[other_id].move(my_packet->x, my_packet->y);
 		}
 		break;
@@ -226,6 +249,44 @@ void ProcessPacket(char* ptr)
 			players[other_id].set_chat(my_packet->message);
 		}
 
+		break;
+	}
+	case SC_TARGET_HIT :
+	{
+		sc_packet_target_hit* my_packet = reinterpret_cast<sc_packet_target_hit*>(ptr);
+		
+		float shoter_x = (my_packet->shoter_x - g_left_x) * 65.0f + 35;
+		float shoter_y = (my_packet->shoter_y - g_top_y) * 65.0f + 35;		
+		float target_x = (my_packet->target_x - g_left_x) * 65.0f + 35;
+		float target_y = (my_packet->target_y - g_top_y) * 65.0f + 35;
+
+		std::cout << shoter_x << ", " << shoter_y << std::endl;
+		std::cout << target_x << ", " << target_y << std::endl;
+
+		sf::Vector2f startPoint(shoter_x, shoter_y);
+		sf::Vector2f endPoint(target_x, target_y);
+
+		sf::VertexArray line(sf::Lines, 2);
+		line[0].position = startPoint;
+		line[1].position = endPoint;
+
+		if (g_line.g_line_count > 4) g_line.g_line_count = 0;
+		g_line.line[g_line.g_line_count] = line;
+		g_line.tic_count[g_line.g_line_count++] = 0;
+		
+		if (my_packet->shoter_id == g_myid) {
+			if (my_packet->target_id < MAX_USER) {
+				std::cout << "����� Player" << my_packet->target_id << "�� �����ϴ�.\n";
+			}
+
+			else {
+				std::cout << "����� NPC" << my_packet->target_id << "�� �����ϴ�.\n";
+			}
+		}
+
+		else {
+			std::cout << "Player" << my_packet->shoter_id << "�� ����� �����ϴ�.\n";
+		}
 		break;
 	}
 	default:
@@ -294,12 +355,21 @@ void client_main()
 		}
 	avatar.draw();
 	for (auto& pl : players) pl.second.draw();
+
 	sf::Text text;
 	text.setFont(g_font);
 	char buf[100];
 	sprintf_s(buf, "(%d, %d)", avatar.m_x, avatar.m_y);
 	text.setString(buf);
 	g_window->draw(text);
+
+	for (int i = 0; i < g_line.g_line_count; i++) {
+		if (g_line.tic_count[i] < 500) {
+			g_window->draw(g_line.line[i]);
+			g_line.tic_count[i] += 1;
+		}
+	}
+
 }
 
 void send_packet(void *packet)
@@ -352,6 +422,7 @@ int main()
 					p.type = CS_LEFT;
 					p.move_time = static_cast<unsigned>(duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count());
 					send_packet(&p); 
+					avatar.set_sprite(128,0,64,64);
 				}
 					break;
 				case sf::Keyboard::Right: {
@@ -361,6 +432,7 @@ int main()
 					p.type = CS_RIGHT;
 					p.move_time = static_cast<unsigned>(duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count());
 					send_packet(&p);
+					avatar.set_sprite(192, 0, 64, 64);
 				}
 					break;
 				case sf::Keyboard::Up: {
@@ -370,6 +442,7 @@ int main()
 					p.type = CS_UP;
 					p.move_time = static_cast<unsigned>(duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count());
 					send_packet(&p);
+					avatar.set_sprite(0, 0, 64, 64);
 				}
 					break;
 				case sf::Keyboard::Down: {
@@ -379,6 +452,20 @@ int main()
 					p.type = CS_DOWN;
 					p.move_time = static_cast<unsigned>(duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count());
 					send_packet(&p);
+					avatar.set_sprite(64, 0, 64, 64);
+				}
+					break;
+				case sf::Keyboard::Space: {
+					unsigned int now = static_cast<unsigned>(duration_cast<seconds>(high_resolution_clock::now().time_since_epoch()).count());
+
+					if ((now - last_shot_time) > 1) {
+						last_shot_time = now;
+
+						cs_packet_space p;
+						p.size = sizeof(p);
+						p.type = CS_SPACE;
+						send_packet(&p);
+					}
 				}
 					break;
 				case sf::Keyboard::Escape:
