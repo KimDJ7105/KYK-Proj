@@ -115,9 +115,7 @@ namespace lve {
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || lveWindow.wasWindowResized()) {
 			lveWindow.resetWindowResizedFlag();
 			recreateSwapChain();
-		}
-
-		if (result != VK_SUCCESS) {
+		} else if (result != VK_SUCCESS) {
 			throw std::runtime_error("failed to present swap chain image!");
 		}
 		isFrameStarted = false;
