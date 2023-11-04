@@ -35,11 +35,19 @@
 #define SC_CHAT			 5
 #define SC_LOGIN_INFO	 6
 #define SC_TARGET_HIT    7
+#define SC_GAME_OVER     8
+#define SC_PUT_ITEM      9
+#define SC_REMOVE_ITEM   10
 
-#define	VIEW_UP 1
-#define VIEW_DOWN 2
-#define VIEW_LEFT 3
+#define	VIEW_UP    1
+#define VIEW_DOWN  2
+#define VIEW_LEFT  3
 #define VIEW_RIGHT 4
+
+#define ITEM_BULLET 0
+#define ITEM_HEAL   1
+#define ITEM_SPAWN_EA 5
+#define MAX_ITEM_EA 1000
 
 #pragma pack (push, 1)
 
@@ -141,6 +149,26 @@ struct sc_packet_target_hit {
 	WORD shoter_y;
 	WORD target_x;
 	WORD target_y;
+};
+
+struct sc_packet_game_over {
+	BYTE size;
+	BYTE type;
+};
+
+struct sc_packet_put_item {
+	BYTE size;
+	BYTE type;
+	WORD id;
+	WORD item_type;
+	WORD item_x;
+	WORD item_y;
+};
+
+struct sc_packet_remove_item {
+	BYTE size;
+	BYTE type;
+	WORD id;
 };
 
 #pragma pack (pop)
