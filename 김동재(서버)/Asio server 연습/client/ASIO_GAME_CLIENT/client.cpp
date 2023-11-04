@@ -290,6 +290,36 @@ void ProcessPacket(char* ptr)
 		}
 		break;
 	}
+	case SC_GAME_OVER : 
+	{
+		cs_packet_logout p;
+		p.size = sizeof(p);
+		p.type = CS_LOGOUT;
+		send_packet(&p);
+		exit(1);
+	}
+	case SC_PUT_ITEM:
+	{
+		sc_packet_put_item* my_packet = reinterpret_cast<sc_packet_put_item*>(ptr);
+		int id = my_packet->id;
+
+		int x_start = 0;
+		if (my_packet->item_type == ITEM_HEAL) x_start = 64;
+
+		players[id] = OBJECT{ *items,x_start,0,64,64 };
+		players[id].id = id;
+		players[id].move(my_packet->item_x, my_packet->item_y);
+		players[id].set_name(" ");
+		players[id].show();
+		break;
+	}
+	case SC_REMOVE_ITEM: 
+	{
+		sc_packet_remove_item* my_packet = reinterpret_cast<sc_packet_remove_item*>(ptr);
+		players.erase(my_packet->id);
+
+		break;
+	}
 	default:
 		printf("Unknown PACKET type [%d]\n", ptr[1]);
 	}
