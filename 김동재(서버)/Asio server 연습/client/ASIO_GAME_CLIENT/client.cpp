@@ -261,8 +261,8 @@ void ProcessPacket(char* ptr)
 		float target_x = (my_packet->target_x - g_left_x) * 65.0f + 35;
 		float target_y = (my_packet->target_y - g_top_y) * 65.0f + 35;
 
-		std::cout << shoter_x << ", " << shoter_y << std::endl;
-		std::cout << target_x << ", " << target_y << std::endl;
+		/*std::cout << shoter_x << ", " << shoter_y << std::endl;
+		std::cout << target_x << ", " << target_y << std::endl;*/
 
 		sf::Vector2f startPoint(shoter_x, shoter_y);
 		sf::Vector2f endPoint(target_x, target_y);
@@ -487,7 +487,7 @@ int main()
 				}
 					break;
 				case sf::Keyboard::Space: {
-					unsigned int now = static_cast<unsigned>(duration_cast<seconds>(high_resolution_clock::now().time_since_epoch()).count());
+					/*unsigned int now = static_cast<unsigned>(duration_cast<seconds>(high_resolution_clock::now().time_since_epoch()).count());
 
 					if ((now - last_shot_time) > 1) {
 						last_shot_time = now;
@@ -496,7 +496,12 @@ int main()
 						p.size = sizeof(p);
 						p.type = CS_SPACE;
 						send_packet(&p);
-					}
+					}*/
+					cs_packet_space p;
+					p.size = sizeof(p);
+					p.type = CS_SPACE;
+					send_packet(&p);
+
 				}
 					break;
 				case sf::Keyboard::Escape:
