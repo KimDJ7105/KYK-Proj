@@ -15,6 +15,8 @@ using namespace chrono;
 //#include "C:\Users\rlaeh\source\repos\ASIO_GAME_SERVER\ASIO_GAME_SERVER\protocol.h"
 #include "..\..\server\ASIO_GAME_SERVER\protocol.h"
 
+void send_packet(void* packet);
+
 sf::TcpSocket s_socket;
 
 constexpr auto SCREEN_WIDTH = 16;
@@ -133,13 +135,17 @@ OBJECT black_tile;
 
 sf::Texture* board;
 sf::Texture* pieces;
+sf::Texture* items;
 
 void client_initialize()
 {
 	board = new sf::Texture;
 	pieces = new sf::Texture;
+	items = new sf::Texture;
+
 	board->loadFromFile("chessmap.bmp");
 	pieces->loadFromFile("chess3.png");
+	items->loadFromFile("items.png");
 	if (false == g_font.loadFromFile("cour.ttf")) {
 		cout << "Font Loading Error!\n";
 		exit(-1);
@@ -206,6 +212,7 @@ void ProcessPacket(char* ptr)
 			players[id].set_name("NPC");
 			players[id].show();
 		}
+		
 		break;
 	}
 	case SC_POS:
