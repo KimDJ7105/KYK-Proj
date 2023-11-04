@@ -31,6 +31,8 @@ using namespace chrono;
 using boost::asio::ip::tcp;
 
 atomic_int g_user_ID;
+atomic_int g_item_ID = MAX_USER + NUM_OF_NPC + 1;
+atomic_int g_item_EA;
 
 const auto X_START_POS = 4;
 const auto Y_START_POS = 4;
@@ -39,10 +41,12 @@ class session;
 class NPC;
 class TIMER_EVENT;
 class EVENT;
+class Item;
 
 //리눅스에서는 tbb:concurrent_~~
 concurrency::concurrent_unordered_map<int, shared_ptr<session>> players;
 concurrency::concurrent_unordered_map<int, shared_ptr<NPC>> npcs;
+concurrency::concurrent_unordered_map<int, shared_ptr<Item>> items;
 concurrency::concurrent_priority_queue<TIMER_EVENT> timer_queue;
 concurrency::concurrent_queue<EVENT> event_queue;
 
@@ -55,10 +59,11 @@ int API_get_y_n(lua_State* L);
 int API_SendMessage(lua_State* L);
 void wakeupNPC(int n_id);
 bool can_see_npc(int from, int to);
+bool can_see_item(int px, int py, int ix, int iy);
 void MoveNpc(int npc_id);
 void event_excuter(const boost::system::error_code& ec, boost::asio::steady_timer* timer);
 
-enum EVENT_TYPE { EV_RANDOM_MOVE, EV_SAY_HELLO, EV_SAY_BYE };
+enum EVENT_TYPE { EV_RANDOM_MOVE, EV_SAY_HELLO, EV_SAY_BYE, EV_SPAWN_ITEM };
 struct TIMER_EVENT {
 	int obj_id;
 	chrono::system_clock::time_point wakeup_time;
@@ -67,6 +72,22 @@ struct TIMER_EVENT {
 	constexpr bool operator < (const TIMER_EVENT& L) const
 	{
 		return (wakeup_time > L.wakeup_time);
+	}
+};
+
+class Item {
+private:
+	int id;
+
+public:
+	int type;
+	int pos_x, pos_y;
+
+	Item(int _id) {
+		id = _id;
+		type = rand() % 2;
+		pos_x = rand() % BOARD_WIDTH;
+		pos_y = rand() % BOARD_HEIGHT;
 	}
 };
 
@@ -146,6 +167,9 @@ private:
 	int prev_data_size_;
 	unsigned int move_time;
 
+	int hp;
+	int bullet;
+
 	bool can_see(int from, int to)
 	{
 		shared_ptr<session> p1 = players[from];
@@ -197,6 +221,19 @@ private:
 
 						P->Send_Packet(&hit_p);
 						target->Send_Packet(&hit_p);
+						target->hp -= 1;
+
+						if (target->hp <= 0) {
+							//체력이 0된 플레이어 로그 아웃 시키기
+							sc_packet_game_over gameover_packet;
+							gameover_packet.size = sizeof(sc_packet_game_over);
+							gameover_packet.type = SC_GAME_OVER;
+
+							target->Send_Packet(&gameover_packet);
+						}
+
+						std::cout << "Player" << P->my_id_ << "shot Player" << target->my_id_ << "remain bullet : " << P->bullet << std::endl;
+						std::cout << "Player" << target->my_id_ << " remain HP : " << target->hp << std::endl;
 						return;
 					}
 					break;
@@ -214,6 +251,18 @@ private:
 
 						P->Send_Packet(&hit_p);
 						target->Send_Packet(&hit_p);
+						target->hp -= 1;
+
+						if (target->hp <= 0) {
+							//체력이 0된 플레이어 로그 아웃 시키기
+							sc_packet_game_over gameover_packet;
+							gameover_packet.size = sizeof(sc_packet_game_over);
+							gameover_packet.type = SC_GAME_OVER;
+
+							target->Send_Packet(&gameover_packet);
+						}
+						std::cout << "Player" << P->my_id_ << "shot Player" << target->my_id_ << "remain bullet : " << P->bullet << std::endl;
+						std::cout << "Player" << target->my_id_ << " remain HP : " << target->hp << std::endl;
 						return;
 					}
 					break;
@@ -231,6 +280,18 @@ private:
 
 						P->Send_Packet(&hit_p);
 						target->Send_Packet(&hit_p);
+						target->hp -= 1;
+
+						if (target->hp <= 0) {
+							//체력이 0된 플레이어 로그 아웃 시키기
+							sc_packet_game_over gameover_packet;
+							gameover_packet.size = sizeof(sc_packet_game_over);
+							gameover_packet.type = SC_GAME_OVER;
+
+							target->Send_Packet(&gameover_packet);
+						}
+						std::cout << "Player" << P->my_id_ << "shot Player" << target->my_id_ << "remain bullet : " << P->bullet << std::endl;
+						std::cout << "Player" << target->my_id_ << " remain HP : " << target->hp << std::endl;
 						return;
 					}
 					break;
@@ -248,6 +309,18 @@ private:
 
 						P->Send_Packet(&hit_p);
 						target->Send_Packet(&hit_p);
+						target->hp -= 1;
+
+						if (target->hp <= 0) {
+							//체력이 0된 플레이어 로그 아웃 시키기
+							sc_packet_game_over gameover_packet;
+							gameover_packet.size = sizeof(sc_packet_game_over);
+							gameover_packet.type = SC_GAME_OVER;
+
+							target->Send_Packet(&gameover_packet);
+						}
+						std::cout << "Player" << P->my_id_ << "shot Player" << target->my_id_ << "remain bullet : " << P->bullet << std::endl;
+						std::cout << "Player" << target->my_id_ << " remain HP : " << target->hp << std::endl;
 						return;
 					}
 					break;
@@ -357,7 +430,10 @@ private:
 				memcpy(&move_time, &packet[2], sizeof(move_time));
 				break;
 			case CS_SPACE: 
-				serch_target(P->my_id_);
+				if (P->bullet > 0) {
+					P->bullet -= 1;
+					serch_target(P->my_id_);
+				}
 				break;
 			case CS_LOGOUT:
 				for (auto& [key, player] : players) {
@@ -428,6 +504,13 @@ private:
 				}
 			}
 		}
+
+		for (auto& [key, item] : items) {
+			shared_ptr<Item> it = item;
+			if (it == nullptr) continue;
+			if (!can_see_item(P->pos_x, P->pos_y, it->pos_x, it->pos_y)) continue;
+			near_list.insert(key);
+		}
 		//-----새로운 시야 리스트 생성 완료
 
 		for (auto& p_id : near_list) { //near_list 유저 처리
@@ -462,13 +545,17 @@ private:
 					P->Send_Packet(&sp_put_o);
 				}
 			}
-			else { //near_list npc 처리
+			else if(p_id <= MAX_USER + NUM_OF_NPC) { //near_list npc 처리
 				shared_ptr<NPC>np = npcs[p_id];
 				if (np == nullptr) continue;
 
 				if (!np->is_active) {
 					//npc를 active 시키고 타이머에 따라 움직이게 해야함
-					sc_packet_put_object put_npc; //플레이어 추가 패킷 준비
+					wakeupNPC(p_id);
+				}
+
+				if (old_vlist.count(p_id) == 0) {
+					sc_packet_put_object put_npc; //npc 추가 패킷 준비
 					put_npc.id = np->id;
 					put_npc.size = sizeof(sc_packet_put_object);
 					put_npc.type = SC_PUT_OBJECT;
@@ -477,45 +564,114 @@ private:
 					put_npc.view_dir = 0;
 
 					P->Send_Packet(&put_npc);
-					wakeupNPC(p_id);
+				}
+			}
+
+			else {
+				//item의 경우
+				shared_ptr<Item> item = items[p_id];
+				if (item == nullptr) continue;
+
+				if (P->pos_x == item->pos_x && P->pos_y == item->pos_y) {
+					switch (item->type) {
+					case ITEM_BULLET :
+						P->bullet += 5;
+						if (P->bullet > 30) P->bullet = 30;
+
+						std::cout << "Player" << P->my_id_ << " use Item" << p_id << "remain bullet : " << P->bullet << std::endl;
+						break;
+					case ITEM_HEAL :
+						P->hp += 5;
+						if (P->hp > 10) P->hp = 10;
+
+						std::cout << "Player" << P->my_id_ << " use Item" << p_id << "remain hp : " << P->hp << std::endl;
+
+						break;
+					}
+
+					//아이템을 삭제해야한다.
+					for (auto& [key, player] : players) {
+						shared_ptr<session> pl = player;
+						if (pl == nullptr) continue;
+						if (!can_see_item(pl->pos_x, pl->pos_y, item->pos_x, item->pos_y)) continue;
+
+						sc_packet_remove_item remove_it;
+						remove_it.size = sizeof(sc_packet_remove_item);
+						remove_it.type = SC_REMOVE_ITEM;
+						remove_it.id = p_id;
+
+						pl->Send_Packet(&remove_it);
+					}
+
+					items[p_id].reset();
+					item.reset();
+
+					g_item_EA -= 1;
+
+					continue;
+				}
+
+				if (old_vlist.count(p_id) == 0) {
+					sc_packet_put_item pitem;
+					pitem.size = sizeof(sc_packet_put_item);
+					pitem.type = SC_PUT_ITEM;
+					pitem.id = p_id;
+					pitem.item_type = item->type;
+					pitem.item_x = item->pos_x;
+					pitem.item_y = item->pos_y;
+
+					P->Send_Packet(&pitem);
 				}
 			}
 		}
 
 		for (auto& pl : old_vlist) { //플레이어 삭제처리
+			if (0 != near_list.count(pl)) continue;
 			if (pl < MAX_USER) {
 				shared_ptr<session> p = players[pl];
 				if (p == nullptr) continue;
 				if (pl == P->my_id_) continue;
-				if (0 == near_list.count(pl)) { //내 시야에서 다른 플레이어가 사라지면 서로 삭제(서로 시야가 같은 경우)
+				//내 시야에서 다른 플레이어가 사라지면 서로 삭제(서로 시야가 같은 경우)
 	
-					sc_packet_remove_player sp_re1;
-					sp_re1.id = pl;
-					sp_re1.size = sizeof(sc_packet_remove_player);
-					sp_re1.type = SC_REMOVE_PLAYER;
-					P->Send_Packet(&sp_re1);
+				sc_packet_remove_player sp_re1;
+				sp_re1.id = pl;
+				sp_re1.size = sizeof(sc_packet_remove_player);
+				sp_re1.type = SC_REMOVE_PLAYER;
+				P->Send_Packet(&sp_re1);
 
-					sc_packet_remove_player sp_re2;
-					sp_re2.id = P->my_id_;
-					sp_re2.size = sizeof(sc_packet_remove_player);
-					sp_re2.type = SC_REMOVE_PLAYER;
-					p->Send_Packet(&sp_re2);
-					p->vl.lock();
-					p->view_list.erase(P->my_id_);
-					p->vl.unlock();
-				}
+				sc_packet_remove_player sp_re2;
+				sp_re2.id = P->my_id_;
+				sp_re2.size = sizeof(sc_packet_remove_player);
+				sp_re2.type = SC_REMOVE_PLAYER;
+				p->Send_Packet(&sp_re2);
+				p->vl.lock();
+				p->view_list.erase(P->my_id_);
+				p->vl.unlock();
+				
 			}
-			else {
+			else if (pl <= NUM_OF_NPC + MAX_USER) {
 				shared_ptr<NPC> np = npcs[pl];
 
 				if (np == nullptr) continue;
-				if (0 == near_list.count(pl)) {
-					sc_packet_remove_player remove_npc;
-					remove_npc.id = pl;
-					remove_npc.size = sizeof(sc_packet_remove_player);
-					remove_npc.type = SC_REMOVE_PLAYER;
-					P->Send_Packet(&remove_npc);
-				}
+				
+				sc_packet_remove_player remove_npc;
+				remove_npc.id = pl;
+				remove_npc.size = sizeof(sc_packet_remove_player);
+				remove_npc.type = SC_REMOVE_PLAYER;
+				P->Send_Packet(&remove_npc);
+			
+			}
+
+			else {
+				shared_ptr<Item> item = items[pl];
+				if (item == nullptr) continue;
+				
+				sc_packet_remove_item remove_it;
+				remove_it.size = sizeof(sc_packet_remove_item);
+				remove_it.type = SC_REMOVE_ITEM;
+				remove_it.id = pl;
+
+				P->Send_Packet(&remove_it);
 			}
 		}
 
@@ -603,6 +759,8 @@ public:
 		view_dir = VIEW_LEFT;
 		/*pos_x = 0;
 		pos_y = 0;*/
+		hp = 10;
+		bullet = 30;
 		curr_packet_size_ = 0;
 		prev_data_size_ = 0;
 	}
@@ -670,6 +828,22 @@ public:
 				view_list.insert(key);
 
 				wakeupNPC(key);
+			}
+		}
+
+		for (auto& [key, item] : items) {
+			shared_ptr<Item> itm = item;
+			if (itm == nullptr) continue;
+			if (can_see_item(pos_x, pos_y, itm->pos_x, itm->pos_y)) {
+				sc_packet_put_item pitem;
+				pitem.size = sizeof(sc_packet_put_item);
+				pitem.type = SC_PUT_ITEM;
+				pitem.id = key;
+				pitem.item_type = item->type;
+				pitem.item_x = item->pos_x;
+				pitem.item_y = item->pos_y;
+
+				Send_Packet(&pitem);
 			}
 		}
 	}
@@ -767,6 +941,14 @@ void worker_thread(boost::asio::io_context *service)
 
 void timer_thread()
 {
+	TIMER_EVENT item_event_init;
+
+	item_event_init.event_id = EV_SPAWN_ITEM;
+	item_event_init.obj_id = 0;
+	item_event_init.target_id = 0;
+	item_event_init.wakeup_time = chrono::system_clock::now() + 5s;
+
+	timer_queue.push(item_event_init);
 	while (true) {
 		TIMER_EVENT ev;
 		auto current_time = chrono::system_clock::now();
@@ -811,6 +993,43 @@ void timer_thread()
 				hello_event.target_id = ev.target_id;
 
 				event_queue.push(hello_event);
+				break;
+			}
+			case EV_SPAWN_ITEM: {
+				if (g_item_EA >= MAX_ITEM_EA) {
+					item_event_init.wakeup_time = chrono::system_clock::now() + 15s;
+					timer_queue.push(item_event_init);
+					break;
+				}
+
+				for (int i = 0; i < ITEM_SPAWN_EA; i++) {
+					int id = g_item_ID++;
+
+					items[id] = std::make_shared<Item>(id);
+					shared_ptr<Item> item = items[id];
+					if (item == nullptr) continue;
+
+					for (auto [key, player] : players) {
+						shared_ptr<session> p = player;
+						if (p == nullptr) continue;
+						if (!can_see_item(p->pos_x, p->pos_y, item->pos_x, item->pos_y)) continue;
+
+						sc_packet_put_item pitem;
+						pitem.size = sizeof(sc_packet_put_item);
+						pitem.type = SC_PUT_ITEM;
+						pitem.id = id;
+						pitem.item_type = item->type;
+						pitem.item_x = item->pos_x;
+						pitem.item_y = item->pos_y;
+
+						p->Send_Packet(&pitem);
+					}
+					//std::cout << "Spwan Item" << item->type << "in " << item->pos_x << ", " << item->pos_y << std::endl;
+					g_item_EA += 1;
+				}
+
+				item_event_init.wakeup_time = chrono::system_clock::now() + 5s;
+				timer_queue.push(item_event_init);
 				break;
 			}
 			}
@@ -947,6 +1166,12 @@ bool can_see_npc(int from, int to)
 
 	if (abs(pl->pos_x - np->pos_x) > VIEW_RANGE) return false;
 	return abs(pl->pos_y - np->pos_y) <= VIEW_RANGE;
+}
+
+bool can_see_item(int px, int py, int ix, int iy)
+{
+	if (abs(px - ix) > VIEW_RANGE) return false;
+	return abs(py - iy) <= VIEW_RANGE;
 }
 
 void MoveNpc(int npc_id)
