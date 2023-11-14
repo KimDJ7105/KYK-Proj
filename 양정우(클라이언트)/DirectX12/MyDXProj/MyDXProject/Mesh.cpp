@@ -120,14 +120,15 @@ CTriangleMesh::CTriangleMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList
 	// 정점(삼각형의 꼭지점)의 색상은 시계방향 순서대로 빨간색, 녹색, 파란색으로 지정한다
 	// RGBA(Red, Green, Blue, Alpha) 4개의 파라메터를 사용하여 색상을 표현한다
 	// 각 파라메터는 0.0~1.0 사이의 실수값을 가진다.
-	CDiffusedVertex pVertices[3];							// 삼각형이니까 정점배열 3개
-	pVertices[0] = CDiffusedVertex(							// 첫번쨰 정점
+	//CDiffusedVertex pVertices[3];							// 삼각형이니까 정점배열 3개
+	m_pVertices = new CDiffusedVertex[m_nVertices];
+	m_pVertices[0] = CDiffusedVertex(							// 첫번쨰 정점
 		XMFLOAT3(0.0f, 0.0f, 0.0f),							// 위치
 		XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));					// 색(빨간색)
-	pVertices[1] = CDiffusedVertex(							// 두번째 정점
+	m_pVertices[1] = CDiffusedVertex(							// 두번째 정점
 		XMFLOAT3(halflength, -halflength, 0.0f),
 		XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f));					// 초록색
-	pVertices[2] = CDiffusedVertex(							// 세번째 정점
+	m_pVertices[2] = CDiffusedVertex(							// 세번째 정점
 		XMFLOAT3(-halflength, -halflength, 0.0f),
 		XMFLOAT4(Colors::Blue));							// 파란색
 
@@ -135,7 +136,7 @@ CTriangleMesh::CTriangleMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList
 	m_pd3dVertexBuffer = ::CreateBufferResource(
 		pd3dDevice, 
 		pd3dCommandList, 
-		pVertices, 
+		m_pVertices,
 		m_nStride* m_nVertices, 
 		D3D12_HEAP_TYPE_DEFAULT,
 		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
@@ -167,7 +168,6 @@ CCubeMeshDiffused::CCubeMeshDiffused(
 	//CDiffusedVertex pVertices[8];
 	m_pVertices = new CDiffusedVertex[m_nVertices];
 	// 이렇게 함으로써 그냥 단순하 변수가 아니라 저장되는 정점데이터를 만든다.
-	// 이렇게 안만든 놈들은 픽킹 작업할때 버그난다. 삼각형은 그래서 버그남
 
 	m_pVertices[0] = CDiffusedVertex(XMFLOAT3(-fx, +fy, -fz), RANDOM_COLOR);
 	m_pVertices[1] = CDiffusedVertex(XMFLOAT3(+fx, +fy, -fz), RANDOM_COLOR);
