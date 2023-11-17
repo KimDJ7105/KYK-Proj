@@ -410,22 +410,30 @@ private:
 		int x = P->pos_x;
 		switch (packet[1]) {
 			case CS_UP: 
-				y--; if (y < 0) y = 0;
+				y--;
+				if (y < 0) y = 0;
+				if (col[x][y]) y++;
 				view_dir = VIEW_UP;
 				memcpy(&move_time, &packet[2], sizeof(move_time));
 				break;
 			case CS_DOWN:
-				y++; if (y >= BOARD_HEIGHT) y = BOARD_HEIGHT - 1;
+				y++;
+				if (y >= BOARD_HEIGHT) y = BOARD_HEIGHT - 1;
+				if (col[x][y]) y--;
 				view_dir = VIEW_DOWN;
 				memcpy(&move_time, &packet[2], sizeof(move_time));
 				break;
 			case CS_LEFT:
-				x--; if (x < 0) x = 0;
+				x--; 
+				if (x < 0) x = 0;
+				if (col[x][y]) x++;
 				view_dir = VIEW_LEFT;
 				memcpy(&move_time, &packet[2], sizeof(move_time));
 				break;
 			case CS_RIGHT:
-				x++; if (x >= BOARD_WIDTH) x = BOARD_WIDTH - 1; 
+				x++; 
+				if (x >= BOARD_WIDTH) x = BOARD_WIDTH - 1; 
+				if (col[x][y]) x--;
 				view_dir = VIEW_RIGHT;
 				memcpy(&move_time, &packet[2], sizeof(move_time));
 				break;
@@ -754,11 +762,11 @@ public:
 	session(tcp::socket socket, int new_id)
 		: socket_(std::move(socket)), my_id_(new_id)
 	{
-		pos_x = rand() % BOARD_WIDTH;
-		pos_y = rand() % BOARD_HEIGHT;
+		/*pos_x = rand() % BOARD_WIDTH;
+		pos_y = rand() % BOARD_HEIGHT;*/
 		view_dir = VIEW_LEFT;
-		/*pos_x = 0;
-		pos_y = 0;*/
+		pos_x = 0;
+		pos_y = 0;
 		hp = 10;
 		bullet = 30;
 		curr_packet_size_ = 0;
