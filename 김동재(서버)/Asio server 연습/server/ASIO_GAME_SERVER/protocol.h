@@ -5,8 +5,8 @@
 #define MAX_BUFF_SIZE   4000
 #define MAX_PACKET_SIZE  255
 
-#define BOARD_WIDTH   200
-#define BOARD_HEIGHT  200
+#define BOARD_WIDTH   52
+#define BOARD_HEIGHT  30
 
 #define VIEW_RADIUS  3
 #define VIEW_RANGE   4
@@ -48,6 +48,8 @@
 #define ITEM_HEAL   1
 #define ITEM_SPAWN_EA 5
 #define MAX_ITEM_EA 1000
+
+bool col[BOARD_WIDTH][BOARD_HEIGHT];
 
 #pragma pack (push, 1)
 
