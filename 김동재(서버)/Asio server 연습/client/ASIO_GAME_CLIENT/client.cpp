@@ -139,6 +139,36 @@ sf::Texture* items;
 
 void client_initialize()
 {
+	for (int i = 0; i < BOARD_WIDTH; ++i) {
+		for (int j = 0; j < BOARD_HEIGHT; ++j) {
+			col[i][j] = true;
+		}
+	}
+
+	for (int i = 0; i < 5; ++i) {
+		for (int j = 0; j < 3; ++j) {
+			int start_x = i * 11;
+			int start_y = j * 11;
+			for (int x = 0; x < 8; ++x)
+				for (int y = 0; y < 8; ++y)
+					col[start_x + x][start_y + y] = false;
+		}
+	}
+
+	for (int i = 0; i < 5; ++i) {
+		for (int j = 0; j < 30; ++j) {
+			col[i * 11 + 3][j] = false;
+			col[i * 11 + 4][j] = false;
+		}
+	}
+
+	for (int j = 0; j < 3; ++j) {
+		for (int i = 0; i < 52; ++i) {
+			col[i][j * 11 + 3] = false;
+			col[i][j * 11 + 4] = false;
+		}
+	}
+
 	board = new sf::Texture;
 	pieces = new sf::Texture;
 	items = new sf::Texture;
