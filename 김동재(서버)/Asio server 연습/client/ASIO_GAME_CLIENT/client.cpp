@@ -221,6 +221,7 @@ void ProcessPacket(char* ptr)
 			avatar.move(my_packet->x, my_packet->y);
 			g_left_x = my_packet->x - SCREEN_WIDTH / 2;
 			g_top_y = my_packet->y - SCREEN_HEIGHT / 2;
+
 			avatar.show();
 		}
 		else if (id < MAX_USER) {
@@ -259,6 +260,7 @@ void ProcessPacket(char* ptr)
 			if (my_packet->view_dir == VIEW_DOWN) players[other_id].set_sprite(64, 0, 64, 64);
 			if (my_packet->view_dir == VIEW_LEFT) players[other_id].set_sprite(128, 0, 64, 64);
 			if (my_packet->view_dir == VIEW_RIGHT) players[other_id].set_sprite(192, 0, 64, 64);
+			if (my_packet->view_dir == -1) players[other_id].set_sprite(256, 0, 64, 64);
 			players[other_id].move(my_packet->x, my_packet->y);
 		}
 		break;

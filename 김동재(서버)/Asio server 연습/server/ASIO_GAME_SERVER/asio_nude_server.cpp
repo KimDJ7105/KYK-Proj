@@ -1265,6 +1265,7 @@ void MoveNpc(int npc_id)
 			npc_pos.type = SC_POS;
 			npc_pos.x = npc->pos_x;
 			npc_pos.y = npc->pos_y;
+			npc_pos.view_dir = -1;
 
 			shared_ptr<session> player = players[pl];
 			if (nullptr == player) continue;
