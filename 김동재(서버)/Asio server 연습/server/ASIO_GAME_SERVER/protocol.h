@@ -14,7 +14,7 @@
 #define MAX_USER 10000
 
 #define NPC_START  2000
-#define NUM_OF_NPC  2000
+#define NUM_OF_NPC  50
 
 #define MY_SERVER_PORT  4000
 
