@@ -407,13 +407,14 @@ void client_main()
 	if (recv_result != sf::Socket::NotReady)
 		if (received > 0) process_data(net_buf, received);
 
-	for (int i = 0; i < SCREEN_WIDTH; ++i)
+	for (int i = 0; i < SCREEN_WIDTH; ++i) {
 		for (int j = 0; j < SCREEN_HEIGHT; ++j)
 		{
 			int tile_x = i + g_left_x;
 			int tile_y = j + g_top_y;
 			if ((tile_x < 0) || (tile_y < 0)) continue;
-			if (0 ==(tile_x /3 + tile_y /3) % 2) {
+			if ((tile_x >= BOARD_WIDTH) || (tile_y >= BOARD_HEIGHT)) continue;
+			if (!col[tile_x][tile_y]) {
 				white_tile.a_move(TILE_WIDTH * i, TILE_WIDTH * j);
 				white_tile.a_draw();
 			}
@@ -423,6 +424,8 @@ void client_main()
 				black_tile.a_draw();
 			}
 		}
+	}
+
 	avatar.draw();
 	for (auto& pl : players) pl.second.draw();
 
