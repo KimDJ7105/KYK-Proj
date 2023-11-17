@@ -899,6 +899,12 @@ private:
 		for (int i = 0; i < NUM_OF_NPC; ++i) {
 			int x = rand() % BOARD_WIDTH;
 			int y = rand() % BOARD_HEIGHT;
+
+			while (col[x][y]) {
+				x = rand() % BOARD_WIDTH;
+				y = rand() % BOARD_HEIGHT;
+			}
+
 			int id = i + MAX_USER;
 			npcs[id] = std::make_shared<NPC>(std::move(socket_), id, x, y);
 			
@@ -1229,10 +1235,10 @@ void MoveNpc(int npc_id)
 	int x = npc->pos_x;
 	int y = npc->pos_y;
 	switch (rand() % 4) {
-	case 0: if (x < (BOARD_WIDTH - 1)) x++; break;
-	case 1: if (x > 0) x--; break;
-	case 2: if (y < (BOARD_HEIGHT - 1)) y++; break;
-	case 3:if (y > 0) y--; break;
+	case 0: if (x < (BOARD_WIDTH - 1) && (!col[x+1][y])) x++; break;
+	case 1: if (x > 0 && (!col[x-1][y])) x--; break;
+	case 2: if (y < (BOARD_HEIGHT - 1) && (!col[x][y+1])) y++; break;
+	case 3: if (y > 0 && (!col[x][y-1])) y--; break;
 	}
 	npc->pos_x = x;
 	npc->pos_y = y;
