@@ -40,6 +40,9 @@ bld/
 # Visual Studio 2017 auto generated files
 Generated\ Files/
 
+# Visual Studio packagr directory
+/김동재(서버)/Asio server 연습/server/packages
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
