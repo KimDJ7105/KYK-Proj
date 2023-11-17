@@ -232,7 +232,7 @@ private:
 							target->Send_Packet(&gameover_packet);
 						}
 
-						std::cout << "Player" << P->my_id_ << "shot Player" << target->my_id_ << "remain bullet : " << P->bullet << std::endl;
+						std::cout << "Player" << P->my_id_ << " shot Player" << target->my_id_ << " remain bullet : " << P->bullet << std::endl;
 						std::cout << "Player" << target->my_id_ << " remain HP : " << target->hp << std::endl;
 						return;
 					}
@@ -261,7 +261,7 @@ private:
 
 							target->Send_Packet(&gameover_packet);
 						}
-						std::cout << "Player" << P->my_id_ << "shot Player" << target->my_id_ << "remain bullet : " << P->bullet << std::endl;
+						std::cout << "Player" << P->my_id_ << " shot Player" << target->my_id_ << " remain bullet : " << P->bullet << std::endl;
 						std::cout << "Player" << target->my_id_ << " remain HP : " << target->hp << std::endl;
 						return;
 					}
@@ -290,7 +290,7 @@ private:
 
 							target->Send_Packet(&gameover_packet);
 						}
-						std::cout << "Player" << P->my_id_ << "shot Player" << target->my_id_ << "remain bullet : " << P->bullet << std::endl;
+						std::cout << "Player" << P->my_id_ << " shot Player" << target->my_id_ << " remain bullet : " << P->bullet << std::endl;
 						std::cout << "Player" << target->my_id_ << " remain HP : " << target->hp << std::endl;
 						return;
 					}
@@ -319,7 +319,7 @@ private:
 
 							target->Send_Packet(&gameover_packet);
 						}
-						std::cout << "Player" << P->my_id_ << "shot Player" << target->my_id_ << "remain bullet : " << P->bullet << std::endl;
+						std::cout << "Player" << P->my_id_ << " shot Player" << target->my_id_ << " remain bullet : " << P->bullet << std::endl;
 						std::cout << "Player" << target->my_id_ << " remain HP : " << target->hp << std::endl;
 						return;
 					}
