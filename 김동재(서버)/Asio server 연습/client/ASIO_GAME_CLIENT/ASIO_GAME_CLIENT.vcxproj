@@ -133,6 +133,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="chess2.png" />
+    <Image Include="chess3.png" />
     <Image Include="chessmap.bmp" />
   </ItemGroup>
   <ItemGroup>
