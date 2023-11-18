@@ -308,6 +308,7 @@ void CObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsComman
     pRotatingObject->SetPosition(0.f, 0.f, 0.f);                    // 위치는 이러이러해
     pRotatingObject->SetRotationAxis(XMFLOAT3(0.0f, 1.0f, 0.0f));   // 각은 이러이러해
     pRotatingObject->SetRotationSpeed(10.0f);                       // 뺑뻉이 속도는 이러이러해
+    pRotatingObject->SelectObjectRender(true);
     m_nObjects = m_nObjects + 1;
 
     // 내가 한번 만들어본 삼각형
@@ -318,6 +319,7 @@ void CObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsComman
     pRotateTriangle->SetPosition(0.f, 15.f, 0.f);
     pRotateTriangle->SetRotationAxis(XMFLOAT3(1.0f, 1.0f, 1.0f));
     pRotateTriangle->SetRotationSpeed(50.f);
+    pRotateTriangle->SelectObjectRender(true);
     m_nObjects = m_nObjects + 1;
     
     // 뺑글뺑글 도는 플레이어 객체가 아닌 비행기 메쉬
@@ -329,6 +331,7 @@ void CObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsComman
     pRotateAirplain->SetRotationAxis(XMFLOAT3(0.0f, 1.0f, 0.0f));
     pRotateAirplain->SetRotationSpeed(50.f);
     pRotateAirplain->Rotate(90.f, 0.f, 0.f);
+    pRotateAirplain->SelectObjectRender(true);
     m_nObjects = m_nObjects + 1;
 
     // "9""구""Sphere"
@@ -339,6 +342,7 @@ void CObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsComman
     pRotateSphere->SetPosition(-20.f, 0.f, 0.f);
     pRotateSphere->SetRotationAxis(XMFLOAT3(1.0f, 1.0f, 1.0f));
     pRotateSphere->SetRotationSpeed(200.f);
+    pRotateSphere->SelectObjectRender(true);
     m_nObjects = m_nObjects + 1;
     
     // 오브젝트에 대한 리스트 생성
@@ -347,7 +351,6 @@ void CObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsComman
     m_ppObjects[1] = pRotateTriangle;
     m_ppObjects[2] = pRotateAirplain;
     m_ppObjects[3] = pRotateSphere;
-
     CreateShaderVariables(pd3dDevice, pd3dCommandList);                         // 만든 애들에 대한 상수 버퍼를 만듦
 }
 
@@ -370,6 +373,7 @@ void CObjectsShader::ReleaseObjects()
         delete[] m_ppObjects;                                                   // 담았던 틀도 깔끔하게 지운다.
     }
 }
+
 
 // IA Shader
 D3D12_INPUT_LAYOUT_DESC CObjectsShader::CreateInputLayout()
@@ -430,7 +434,10 @@ void CObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera*
     {
         if (m_ppObjects[j])
         {
-            m_ppObjects[j]->Render(pd3dCommandList, pCamera);                   // 오브젝트들을 순서대로 랜더링 해준다.
+            if (m_ppObjects[j]->IsObjectRender() == true)
+            {
+                m_ppObjects[j]->Render(pd3dCommandList, pCamera);                   // 오브젝트들을 순서대로 랜더링 해준다.
+            }
         }
     }
 }

@@ -101,6 +101,8 @@ CGreyField::CGreyField(
 	);
 	SetMesh(pGreyField);
 
+	SelectObjectRender(true);
+
 	//땅을 위한 셰이더 변수를 생성한다.
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 

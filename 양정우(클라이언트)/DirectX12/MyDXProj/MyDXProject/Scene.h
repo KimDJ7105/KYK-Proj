@@ -18,7 +18,6 @@ public:
 	// Objects
 	void BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);	// 버전 업그레이드, 파라메터 추가 ID3D12GraphicsCommandList* pd3dCommandList
 	void ReleaseObjects();
-	void ReleaseAllObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
 	// Move
 	bool ProcessInput(UCHAR* pKeysBuffer);// 버전 업그레이드, 파라메터 추가 UCHAR* pKeysBuffer
 	void AnimateObjects(float fTimeElapsed);

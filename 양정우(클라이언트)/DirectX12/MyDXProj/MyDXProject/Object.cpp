@@ -214,6 +214,16 @@ int CGameObject::PickObjectByRayIntersection(XMFLOAT3& xmf3PickPosition, XMFLOAT
 	return(nIntersected);
 }
 
+void CGameObject::SelectObjectRender(bool isObjectRender)
+{
+	m_bObjectRender = isObjectRender;
+}
+
+bool CGameObject::IsObjectRender()
+{
+	return m_bObjectRender;
+}
+
 CRotatingObject::CRotatingObject()
 {
 	m_xmf3RotationAxis = XMFLOAT3(0.0f, 1.0f, 0.0f);

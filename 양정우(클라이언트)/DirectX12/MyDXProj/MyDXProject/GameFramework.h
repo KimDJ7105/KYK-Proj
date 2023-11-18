@@ -94,7 +94,6 @@ public:
 	// Object
 	void BuildObjects();																// Object 생성
 	void ReleaseObjects();																// Object 소멸
-	void RebuildObjcet();
 
 	// Framework의 핵심요소
 	void ProcessInput();																// 사용자 입력

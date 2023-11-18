@@ -386,28 +386,6 @@ void CGameFramework::ReleaseObjects()
 	if (m_pScene) delete m_pScene;
 }
 
-void CGameFramework::RebuildObjcet()
-{
-	m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);						// Command List를 오브젝트 빌드 전에 초기화 안해주면 그려지질 않으니 조심하자
-
-	// Scene
-		// Scene 객체를 생성하고 Scene에 포함될 게임 객체들을 생성
-	if (m_pScene) m_pScene->BuildObjects(m_pd3dDevice, m_pd3dCommandList);
-
-	// Scene 객체를 생성하기 위해 필요한 Graphics Command List 들을 Command Queue에 추가한다.
-	m_pd3dCommandList->Close();
-	ID3D12CommandList* ppd3dCommanaLists[] = { m_pd3dCommandList };
-	m_pd3dCommandQueue->ExecuteCommandLists(1, ppd3dCommanaLists);
-
-
-// Command List
-	// Graphics Command List들이 모두 실행될 때 까지 기다린다.
-	WaitForGpuComplete();
-
-	// Graphics Resource들을 생성하는 과정에 생성된 업로드 버퍼들을 소멸
-	if (m_pScene) m_pScene->ReleaseUploadBuffers();
-
-}
 // 마우스 입력
 void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
@@ -418,6 +396,10 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 		//마우스가 눌려지면 마우스 픽킹을 하여 선택한 게임 객체를 찾는다.
 		m_pSelectedObject = m_pScene->PickObjectPointedByCursor(LOWORD(lParam), HIWORD(lParam), m_pCamera);
 		//아무짓도 안하고싶으면 주석처리를 갈겨버리자
+		if (m_pSelectedObject)
+		{
+			m_pSelectedObject->SelectObjectRender(false);
+		}
 		::SetCapture(hWnd);					// 마우스 캡쳐를 하고 
 		::GetCursorPos(&m_ptOldCursorPos);	// 현재 마우스 위치를 가져온다.
 		break;
@@ -458,10 +440,8 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 		case VK_F6:
 			break;
 		case VK_F7:
-			m_pScene->ReleaseAllObjects(m_pd3dDevice, m_pd3dCommandList);
 			break;
 		case VK_F8:
-			RebuildObjcet();
 			break;
 		case VK_F9:					// F9키를 누르면 전체화면 모드가 된다.
 			ChangeSwapChainState();
@@ -556,7 +536,8 @@ void CGameFramework::ProcessSelectedObject(DWORD dwDirection, float cxDelta, flo
 {
 	//픽킹으로 선택한 게임 객체가 있으면 키보드를 누르거나 마우스를 움직이면 게임 개체를 이동 또는 회전한다.
 	// 만약 여기 내용을 바꾼다면? 픽킹을 했을 때 하는 짓이 바뀌지 않을까?
-	if (dwDirection != 0)
+	// 픽킹을 하고 움직이면 실행되버린다. 오브젝트 지우는건 다른곳에서 한다.
+	/*if (dwDirection != 0)
 	{
 		if (dwDirection & DIR_FORWARD) m_pSelectedObject->MoveForward(+1.0f);
 		if (dwDirection & DIR_BACKWARD) m_pSelectedObject->MoveForward(-1.0f);
@@ -568,10 +549,9 @@ void CGameFramework::ProcessSelectedObject(DWORD dwDirection, float cxDelta, flo
 	else if ((cxDelta != 0.0f) || (cyDelta != 0.0f))
 	{
 	m_pSelectedObject->Rotate(cyDelta, cxDelta, 0.0f);
-	}
-
+	}*/
 }
-/*
+
 void CGameFramework::ProcessInput()
 {
 	static UCHAR pKeyBuffer[256];
@@ -632,68 +612,68 @@ void CGameFramework::ProcessInput()
 	}
 	//플레이어를 실제로 이동하고 카메라를 갱신한다. 중력과 마찰력의 영향을 속도 벡터에 적용한다
 	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
-}*/
-//위에껀 픽킹작업 안한거고 아래껀 픽킹 작업 한거
-void CGameFramework::ProcessInput()
-{
-	static UCHAR pKeyBuffer[256];
-	DWORD dwDirection = 0;
-
-	float cxDelta = 0.0f, cyDelta = 0.0f;
-	POINT ptCursorPos;
-
-	if (::GetKeyboardState(pKeyBuffer))
-	{
-		if (pKeyBuffer[VK_UP] & 0xF0) dwDirection |= DIR_FORWARD;
-		if (pKeyBuffer[VK_DOWN] & 0xF0) dwDirection |= DIR_BACKWARD;
-		if (pKeyBuffer[VK_LEFT] & 0xF0) dwDirection |= DIR_LEFT;
-		if (pKeyBuffer[VK_RIGHT] & 0xF0) dwDirection |= DIR_RIGHT;
-		if (pKeyBuffer[VK_PRIOR] & 0xF0) dwDirection |= DIR_UP;
-		if (pKeyBuffer[VK_NEXT] & 0xF0) dwDirection |= DIR_DOWN;
-
-		if (::GetCapture() == m_hWnd)
-		{
-			//마우스 커서를 화면에서 없앤다(보이지 않게 한다).
-			::SetCursor(NULL);
-
-			//현재 마우스 커서의 위치를 가져온다.
-			::GetCursorPos(&ptCursorPos);
-
-			//마우스 버튼이 눌린 상태에서 마우스가 움직인 양을 구한다.
-			cxDelta = (float)(ptCursorPos.x - m_ptOldCursorPos.x) / 3.0f;
-			cyDelta = (float)(ptCursorPos.y - m_ptOldCursorPos.y) / 3.0f;
-
-			//마우스 커서의 위치를 마우스가 눌려졌던 위치로 설정한다.
-			::SetCursorPos(m_ptOldCursorPos.x, m_ptOldCursorPos.y);
-		}
-	}
-
-	if ((dwDirection != 0) || (cxDelta != 0.0f) || (cyDelta != 0.0f))
-	{
-		if (m_pSelectedObject) // 만약 픽된 오브젝트가 있으면
-		{
-			ProcessSelectedObject(dwDirection, cxDelta, cyDelta); // 그 행위를 수행한다.
-		}
-		else
-		{
-			if (cxDelta || cyDelta)
-			{
-				/*cxDelta는 y-축의 회전을 나타내고 cyDelta는 x-축의 회전을 나타낸다.
-				오른쪽 마우스 버튼이 눌려진 경우 cxDelta는 z-축의 회전을 나타낸다.*/
-				if (pKeyBuffer[VK_RBUTTON] & 0xF0)
-					m_pPlayer->Rotate(cyDelta, 0.0f, -cxDelta);
-				else
-					m_pPlayer->Rotate(cyDelta, cxDelta, 0.0f);
-			}
-			/*플레이어를 dwDirection 방향으로 이동한다(실제로는 속도 벡터를 변경한다).
-			이동 거리는 시간에 비례하도록 한다.
-			플레이어의 이동 속력은 (50/초)로 가정한다.*/
-			if (dwDirection) m_pPlayer->Move(dwDirection, 50.0f * m_GameTimer.GetTimeElapsed(), true);
-		}
-	}
-	//플레이어를 실제로 이동하고 카메라를 갱신한다. 중력과 마찰력의 영향을 속도 벡터에 적용한다
-	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
 }
+//아래는 픽킹을 한 오브젝트를 움직이려고 사용한 프로세스
+//void CGameFramework::ProcessInput()
+//{
+//	static UCHAR pKeyBuffer[256];
+//	DWORD dwDirection = 0;
+//
+//	float cxDelta = 0.0f, cyDelta = 0.0f;
+//	POINT ptCursorPos;
+//
+//	if (::GetKeyboardState(pKeyBuffer))
+//	{
+//		if (pKeyBuffer[VK_UP] & 0xF0) dwDirection |= DIR_FORWARD;
+//		if (pKeyBuffer[VK_DOWN] & 0xF0) dwDirection |= DIR_BACKWARD;
+//		if (pKeyBuffer[VK_LEFT] & 0xF0) dwDirection |= DIR_LEFT;
+//		if (pKeyBuffer[VK_RIGHT] & 0xF0) dwDirection |= DIR_RIGHT;
+//		if (pKeyBuffer[VK_PRIOR] & 0xF0) dwDirection |= DIR_UP;
+//		if (pKeyBuffer[VK_NEXT] & 0xF0) dwDirection |= DIR_DOWN;
+//
+//		if (::GetCapture() == m_hWnd)
+//		{
+//			//마우스 커서를 화면에서 없앤다(보이지 않게 한다).
+//			::SetCursor(NULL);
+//
+//			//현재 마우스 커서의 위치를 가져온다.
+//			::GetCursorPos(&ptCursorPos);
+//
+//			//마우스 버튼이 눌린 상태에서 마우스가 움직인 양을 구한다.
+//			cxDelta = (float)(ptCursorPos.x - m_ptOldCursorPos.x) / 3.0f;
+//			cyDelta = (float)(ptCursorPos.y - m_ptOldCursorPos.y) / 3.0f;
+//
+//			//마우스 커서의 위치를 마우스가 눌려졌던 위치로 설정한다.
+//			::SetCursorPos(m_ptOldCursorPos.x, m_ptOldCursorPos.y);
+//		}
+//	}
+//
+//	if ((dwDirection != 0) || (cxDelta != 0.0f) || (cyDelta != 0.0f))
+//	{
+//		if (m_pSelectedObject) // 만약 픽된 오브젝트가 있으면
+//		{
+//			ProcessSelectedObject(dwDirection, cxDelta, cyDelta); // 그 행위를 수행한다.
+//		}
+//		else
+//		{
+//			if (cxDelta || cyDelta)
+//			{
+//				/*cxDelta는 y-축의 회전을 나타내고 cyDelta는 x-축의 회전을 나타낸다.
+//				오른쪽 마우스 버튼이 눌려진 경우 cxDelta는 z-축의 회전을 나타낸다.*/
+//				if (pKeyBuffer[VK_RBUTTON] & 0xF0)
+//					m_pPlayer->Rotate(cyDelta, 0.0f, -cxDelta);
+//				else
+//					m_pPlayer->Rotate(cyDelta, cxDelta, 0.0f);
+//			}
+//			/*플레이어를 dwDirection 방향으로 이동한다(실제로는 속도 벡터를 변경한다).
+//			이동 거리는 시간에 비례하도록 한다.
+//			플레이어의 이동 속력은 (50/초)로 가정한다.*/
+//			if (dwDirection) m_pPlayer->Move(dwDirection, 50.0f * m_GameTimer.GetTimeElapsed(), true);
+//		}
+//	}
+//	//플레이어를 실제로 이동하고 카메라를 갱신한다. 중력과 마찰력의 영향을 속도 벡터에 적용한다
+//	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
+//}
 
 void CGameFramework::AnimateObjects()
 {

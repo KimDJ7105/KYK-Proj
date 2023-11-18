@@ -135,17 +135,6 @@ void CScene::ReleaseObjects()
 	if (m_pShaders) delete[] m_pShaders;
 }
 
-void CScene::ReleaseAllObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
-{
-	for (int i = 0; i < m_nShaders; i++)
-	{
-		m_pShaders[i].ReleaseShaderVariables();
-		m_pShaders[i].ReleaseObjects();										// 아까 만든 오브젝트들을 배열에 맞게 전부 지워버린다.				
-	}
-	m_pShaders = new CObjectsShader[m_nShaders];							// 그 사용할 Shader 메모리 할당.
-	m_pShaders[0].CreateShader(pd3dDevice, m_pd3dGraphicsRootSignature);	// Shader를 만들어주고
-}
-
 bool CScene::ProcessInput(UCHAR* pKeysBuffer)
 {
 	return (false);

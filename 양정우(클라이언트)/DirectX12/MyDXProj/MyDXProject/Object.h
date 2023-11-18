@@ -25,6 +25,8 @@ protected:
 
 	CShader* m_pShader = NULL;
 
+	bool m_bObjectRender = false;
+
 public:
 	void ReleaseUploadBuffers();
 
@@ -75,6 +77,12 @@ public:
 	void GenerateRayForPicking(XMFLOAT3& xmf3PickPosition, XMFLOAT4X4& xmf4x4View, XMFLOAT3* pxmf3PickRayOrigin, XMFLOAT3* pxmf3PickRayDirection);
 	//카메라 좌표계의 한 점에 대한 모델 좌표계의 픽킹 광선을 생성하고 객체와의 교차를 검사한다. 
 	int PickObjectByRayIntersection(XMFLOAT3& xmf3PickPosition, XMFLOAT4X4& xmf4x4View, float* pfHitDistance);
+
+// 오브젝트를 그릴지 말지의 여부
+	// 오브젝트 랜더링 여부를 결정한다
+	void SelectObjectRender(bool isObjectRender);
+	// 현재 오브젝트의 랜더링 여부를 불러온다.
+	bool IsObjectRender();
 };
 
 class CRotatingObject : public CGameObject
