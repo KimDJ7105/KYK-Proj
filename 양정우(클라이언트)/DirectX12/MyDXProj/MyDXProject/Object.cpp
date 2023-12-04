@@ -9,10 +9,12 @@ CGameObject::CGameObject()
 
 CGameObject::~CGameObject()
 {
+	//이 게임 객체는 더 이상 메쉬를 참조하지 않으므로 메쉬의 참조값을 1 감소한다. 
 	if (m_pMesh) m_pMesh->Release();
 	if (m_pShader)
 	{
 		m_pShader->ReleaseShaderVariables();
+		//이 게임 객체는 더 이상 쉐이더를 참조하지 않으므로 쉐이더의 참조값을 1 감소한다. 
 		m_pShader->Release();
 	}
 
@@ -160,9 +162,9 @@ void CGameObject::MoveForward(float fDistance)
 }
 
 // Object Rotate
-// 게임 객체를 주어진 각도로 회전한다
 void CGameObject::Rotate(float fPitch, float fYaw, float fRoll)
 {
+	// 회전변환
 	XMMATRIX mtxRotate = XMMatrixRotationRollPitchYaw(XMConvertToRadians(fPitch), XMConvertToRadians(fYaw), XMConvertToRadians(fRoll));
 	m_xmf4x4World = Matrix4x4::Multiply(mtxRotate, m_xmf4x4World);
 }

@@ -46,7 +46,7 @@ protected:
 	XMFLOAT4X4 m_xmf4x4Projection;
 
 	// 뷰포트와 씨저 사각형
-	D3D12_VIEWPORT m_d3dViewport;
+	D3D12_VIEWPORT m_d3dViewport;			// 화면 좌표계같은 느낌
 	D3D12_RECT m_d3dScissorRect;
 
 	// Camera를 가지고있는 Player에 대한 포인터

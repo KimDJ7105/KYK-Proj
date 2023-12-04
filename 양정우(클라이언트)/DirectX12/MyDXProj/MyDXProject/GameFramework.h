@@ -67,7 +67,7 @@ private:
 	CGameTimer m_GameTimer;																// 게임 프레임워크에서 사용할 타이머
 	_TCHAR m_pszFrameRate[50];															// 프레임 레이트를 주 윈도우의 캡션에 출력하기 위한 문자열
 
-	// Scene
+	// Scene - 게임 객체들을 포함하는 씬(게임 세계) 클래스이다. 
 	CScene* m_pScene;
 
 	// Picking
@@ -77,8 +77,9 @@ public:
 	CGameFramework();																	// 생성자
 	~CGameFramework();																	// 소멸자
 
+	//프레임워크를 생성하는 함수이다(주 윈도우가 생성되면 호출된다). 
 	bool OnCreate(HINSTANCE hInstance, HWND hMainWnd);									// Framework 초기화(주 윈도우가 생성되면 호출)
-
+	//프레임워크를 소멸하는 함수이다(응용프로그램이 종료되면 호출된다). 
 	void OnDestroy();
 
 	// Pipeline
@@ -91,11 +92,11 @@ public:
 	void CreateRenderTargetViews();														// Render Target View들을 생성
 	void CreateDepthStencilView();														// Depth Stencil View를 생성
 
-	// Object
+	// Object - 렌더링할 메쉬와 게임 객체를 생성하고 소멸하는 함수이다. 
 	void BuildObjects();																// Object 생성
 	void ReleaseObjects();																// Object 소멸
 
-	// Framework의 핵심요소
+	// Framework의 핵심요소 - (사용자 입력, 애니메이션, 렌더링)을 구성하는 함수이다. 
 	void ProcessInput();																// 사용자 입력
 	void AnimateObjects();																// 애니메이션
 	void FrameAdvance();																// 랜더링
@@ -120,7 +121,7 @@ public:
 	// Camera
 	CCamera* m_pCamera = NULL;
 
-	// Player
+	// Player - 플레이어 객체이다. 
 	CPlayer* m_pPlayer = NULL;															// 플레이어 객체에 대한 포인터이다.
 
 	// Mouse Point

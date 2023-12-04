@@ -19,7 +19,8 @@
 #include <string>
 #include <wrl.h>
 #include <shellapi.h>
-#include <timeapi.h>								// ::timeGetTime() 쓸라고 추가함	
+#include <timeapi.h>								// ::timeGetTime() 쓸라고 추가함
+#include <fstream>
 #include <vector>
 
 // Direct3D
@@ -71,6 +72,17 @@ extern ID3D12Resource* CreateBufferResource(
 	D3D12_RESOURCE_STATES d3dResourceStates = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
 	ID3D12Resource** ppd3dUploadBuffer = NULL
 );
+
+// 모델을 로드하기위해 추가한 함수
+inline int ReadUnityBinaryString(FILE* pFile, char* pstrToken, BYTE* pnStrLength)
+{
+	UINT nReads = 0;
+	nReads = (UINT)::fread(pnStrLength, sizeof(BYTE), 1, pFile);
+	nReads = (UINT)::fread(pstrToken, sizeof(char), *pnStrLength, pFile);
+	pstrToken[*pnStrLength] = '\0';
+
+	return(nReads);
+}
 
 
 // 3차원 벡터의 연산 

@@ -169,6 +169,7 @@ void CCamera::RegenerateViewMatrix()
 // Set
 void CCamera::SetViewport(int xTopLeft, int yTopLeft, int nWidth, int nHeight, float fMinZ, float fMaxZ)
 {
+	//화면좌표계를 설정
 	m_d3dViewport.TopLeftX = float(xTopLeft);
 	m_d3dViewport.TopLeftY = float(yTopLeft);
 	m_d3dViewport.Width = float(nWidth);
@@ -179,6 +180,7 @@ void CCamera::SetViewport(int xTopLeft, int yTopLeft, int nWidth, int nHeight, f
 
 void CCamera::SetScissorRect(LONG xLeft, LONG yTop, LONG xRight, LONG yBottom)
 {
+	// 씨저 사각형을 설정
 	m_d3dScissorRect.left = xLeft;
 	m_d3dScissorRect.top = yTop;
 	m_d3dScissorRect.right = xRight;

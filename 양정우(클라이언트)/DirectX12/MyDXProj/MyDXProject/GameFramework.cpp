@@ -72,6 +72,7 @@ bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	// View
 	CreateDepthStencilView();
 
+	//플레이어와 게임 세계(씬)을 생성한다.
 	BuildObjects();
 
 	return (true);
@@ -353,9 +354,9 @@ void CGameFramework::BuildObjects()
 // Scene
 	// Scene 객체를 생성하고 Scene에 포함될 게임 객체들을 생성
 	m_pScene = new CScene();
-	//m_pScene->BuildObjects(m_pd3dDevice, m_pd3dCommandList);
 	if (m_pScene) m_pScene->BuildObjects(m_pd3dDevice, m_pd3dCommandList);
 
+//플레이어 게임 객체를 생성하고 카메라와 위치를 설정한다.
 	// 이제 Airplane의 Camera Mode에 따라서 카메라를 만든다.
 	CAirplanePlayer* pAirplanePlayer = new CAirplanePlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature());
 	m_pPlayer = pAirplanePlayer;
@@ -394,7 +395,7 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 		//마우스가 눌려지면 마우스 픽킹을 하여 선택한 게임 객체를 찾는다.
-		m_pSelectedObject = m_pScene->PickObjectPointedByCursor(LOWORD(lParam), HIWORD(lParam), m_pCamera);
+		//m_pSelectedObject = m_pScene->PickObjectPointedByCursor(LOWORD(lParam), HIWORD(lParam), m_pCamera);
 		//아무짓도 안하고싶으면 주석처리를 갈겨버리자
 		if (m_pSelectedObject)
 		{
@@ -707,8 +708,10 @@ void CGameFramework::FrameAdvance()
 	// Timer의 시간이 갱신되도록 하고 Frame Rate를 계산한다.
 	m_GameTimer.Tick(0.0f);
 
+	//사용자 입력을 처리한다.
 	ProcessInput();
 
+	//게임 세계를 애니메이션(움직이게)한다.
 	AnimateObjects();
 
 	// 명령 할당자(Command Allocator)와 명령 리스트(Command List)를 리셋한다.
@@ -746,6 +749,7 @@ void CGameFramework::FrameAdvance()
 	m_pd3dCommandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);		// (이 디스크립터 핸들이 나타내는 RenderTarget을, 이러한 설정으로, Depth값은 이렇게, Stencil값은 이렇게, Depth Stencil 전체(NULL)를 Clear해줘)
 
 	// Scene
+	//씬을 렌더링한다.
 	if (m_pScene) m_pScene->Render(m_pd3dCommandList, m_pCamera);
 
 	// 랜더링 될 친구들을 놓는 곳//////////////////////////////////////////
