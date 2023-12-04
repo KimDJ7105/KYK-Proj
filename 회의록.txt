@@ -280,3 +280,32 @@
                       중점연구과제 생각해 오기.
  - 서버 : 클라이언트 도와 주기
 
+2023-12-04
+-----------
+1. 진행상황
+ - 모델에 매터리얼 입히기 미완성
+ - 클라이언트 모델 로딩 및 이동 구현 (텍스쳐 로딩 미구현)
+
+2. 중점연구과제 
+ - 클라이언트 : 파티클과 Object사이의 충돌 처리 : 문제는 없는데 다른 팀에서 너무 많이 써먹어서 식상하다.
+    * 충돌 위치에 그을린 흔적 추가.
+ - 서버 : Boost ASIO
+ - 기획 : 참신한 기획 (두뇌코어를 활용한 사망플레이어의 게임 참가)
+
+3. 다음미팅
+ - 12월 18일 오후 7시 
+ - 12월 26일 발표 PPT만들어 오기 (게임소개, 중점연구분야, 제작 스케줄, 구현한 내용 동영상)
+ - 기획 : 방/복도 매터리얼 입히기
+ - 클라이언트 : 방/복도 로딩
+ - 서버 : 클라이언트 서버 연동 도와 주기
+    * 클라이언트에서 할일 : 네트워크 API 제작
+        * CreateObject(int object_type, int object_id, float x, float y, float z, int animation_id, float direction);
+     * RemoveObject(int object_id);
+      DisplayHitLocation(int object_id, float x, float y, float z)  => 파티클을 이 위치에 표시해라.
+        * ChangeObjectLocation(int object_id, float x, float, y, float z, float direction);
+      ChangeObjectAnimation(int object_id, int animation_id);
+     GetAvatarInforation(float &x, float &y, float &z, float &direction);
+     SetUIInfo (.........)
+   * 클라이언트 프로그래머에게 제공해야 할 API
+        FireGun(int fire_obj, float start_loc_x, float start_loc_y, float start_loc_z, float direction);
+
