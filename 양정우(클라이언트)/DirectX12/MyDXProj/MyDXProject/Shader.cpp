@@ -195,6 +195,7 @@ void CShader::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, X
 void CShader::OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList)
 {
     // Pipeline에 Graphics 상태객체를 설정
+    //현재 게임 객체를 렌더링 파이프라인에 설정한다.
     pd3dCommandList->SetPipelineState(m_ppd3dPipelineStates[0]);
 }
 
@@ -305,7 +306,7 @@ void CObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsComman
     CRotatingObject* pRotatingObject = NULL;
     pRotatingObject = new CRotatingObject();                        // 새로운 오브젝트 생성
     pRotatingObject->SetMesh(pCubeMesh);                            // 만든 오브젝트에 대한 모양 설정
-    pRotatingObject->SetPosition(0.f, 0.f, 0.f);                    // 위치는 이러이러해
+    pRotatingObject->SetPosition(0.f, 0.f, 10.f);                    // 위치는 이러이러해
     pRotatingObject->SetRotationAxis(XMFLOAT3(0.0f, 1.0f, 0.0f));   // 각은 이러이러해
     pRotatingObject->SetRotationSpeed(10.0f);                       // 뺑뻉이 속도는 이러이러해
     pRotatingObject->SelectObjectRender(true);
@@ -344,6 +345,16 @@ void CObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsComman
     pRotateSphere->SetRotationSpeed(200.f);
     pRotateSphere->SelectObjectRender(true);
     m_nObjects = m_nObjects + 1;
+
+    CModelMesh* pAirModelMesh = new CModelMesh(pd3dDevice, pd3dCommandList, "Models/FlyerPlayership.bin");
+    CRotatingObject* pRotateAirplainModel = NULL;
+    pRotateAirplainModel = new CRotatingObject();
+    pRotateAirplainModel->SetMesh(pAirModelMesh);
+    pRotateAirplainModel->SetPosition(20.f, 0.f, 0.f);
+    pRotateAirplainModel->SetRotationAxis(XMFLOAT3(1.0f, 0.0f, 0.0f));
+    pRotateAirplainModel->SetRotationSpeed(0.0f);
+    pRotateAirplainModel->SelectObjectRender(true);
+    m_nObjects = m_nObjects + 1;
     
     // 오브젝트에 대한 리스트 생성
     m_ppObjects = new CGameObject * [m_nObjects];
@@ -351,6 +362,7 @@ void CObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsComman
     m_ppObjects[1] = pRotateTriangle;
     m_ppObjects[2] = pRotateAirplain;
     m_ppObjects[3] = pRotateSphere;
+    m_ppObjects[4] = pRotateAirplainModel;
     CreateShaderVariables(pd3dDevice, pd3dCommandList);                         // 만든 애들에 대한 상수 버퍼를 만듦
 }
 
@@ -428,6 +440,7 @@ void CObjectsShader::ReleaseUploadBuffers()
 void CObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
     // 위에 만들어둔 Render를 재활용 한다.
+    //현재 게임 객체를 렌더링 파이프라인에 설정한다.
     CShader::Render(pd3dCommandList, pCamera);
 
     for (int j = 0; j < m_nObjects; j++)
@@ -436,6 +449,7 @@ void CObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera*
         {
             if (m_ppObjects[j]->IsObjectRender() == true)
             {
+                //현재 게임 객체를 렌더링한다.
                 m_ppObjects[j]->Render(pd3dCommandList, pCamera);                   // 오브젝트들을 순서대로 랜더링 해준다.
             }
         }

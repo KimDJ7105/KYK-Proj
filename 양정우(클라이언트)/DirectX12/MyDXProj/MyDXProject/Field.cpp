@@ -93,11 +93,10 @@ CGreyField::CGreyField(
 	ID3D12RootSignature* pd3dGraphicsRootSignature)
 {
 	//땅 메쉬를 생성한다.
-	CMesh* pGreyField = new CGroundMeshDiffused(
+	CMesh* pGreyField = new CModelMesh(
 		pd3dDevice,
 		pd3dCommandList,
-		200.f, 200.f,
-		XMFLOAT4(0.4f, 0.4f, 0.4f, 0.0f)
+		"Models/ProtoMap.bin"
 	);
 	SetMesh(pGreyField);
 
@@ -132,5 +131,6 @@ void CGreyField::OnPrepareRender()
 
 	//땅의 위치를 설정한다.
 	SetPosition(XMFLOAT3(0.0f, -12.0f, 0.0f));
-	
+	XMMATRIX mtxRotate = XMMatrixRotationRollPitchYaw(XMConvertToRadians(270.0f), 0.0f, 0.0f);
+	m_xmf4x4World = Matrix4x4::Multiply(mtxRotate, m_xmf4x4World);
 }

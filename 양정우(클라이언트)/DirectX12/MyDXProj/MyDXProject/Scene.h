@@ -15,13 +15,13 @@ public:
 	bool OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	bool OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 
-	// Objects
+	// Objects - 게임 객체들을 생성하고 소멸한다.
 	void BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);	// 버전 업그레이드, 파라메터 추가 ID3D12GraphicsCommandList* pd3dCommandList
 	void ReleaseObjects();
 	// Move
 	bool ProcessInput(UCHAR* pKeysBuffer);// 버전 업그레이드, 파라메터 추가 UCHAR* pKeysBuffer
-	void AnimateObjects(float fTimeElapsed);
-	void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
+	void AnimateObjects(float fTimeElapsed);	//게임 객체들을 애니메이션한다.
+	void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);		//게임 객체들을 렌더링한다.
 
 	void ReleaseUploadBuffers();
 

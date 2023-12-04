@@ -2,12 +2,11 @@
 #include "stdafx.h"
 
 // Vertex - Position
-// 정점을 표현하기 위한 클래스를 선언한다
-class CVertex
+class CVertex	// 정점을 표현하기 위한 클래스를 선언한다
 {
 protected:
-	// 정점의 위치 벡터이다(모든 정점은 최소한 위치 벡터를 가져야 한다)
-	XMFLOAT3 m_xmf3Position;
+	XMFLOAT3 m_xmf3Position;	// 정점의 위치 벡터이다(모든 정점은 최소한 위치 벡터를 가져야 한다)
+
 public:
 	CVertex() { m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f); }
 	CVertex(XMFLOAT3 xmf3Position) { m_xmf3Position = xmf3Position; }
@@ -17,8 +16,7 @@ public:
 class CDiffusedVertex : public CVertex
 {
 protected:
-	//정점의 색상이다
-	XMFLOAT4 m_xmf4Diffuse;
+	XMFLOAT4 m_xmf4Diffuse;	//정점의 색상이다
 
 public:
 	CDiffusedVertex() 
@@ -37,7 +35,9 @@ public:
 	~CDiffusedVertex() { }
 };
 
-// Mesh
+
+//Mesh////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
 class CMesh
 {
 public:
@@ -45,21 +45,42 @@ public:
 	virtual ~CMesh();
 
 private:
+	//인스턴싱(Instancing)을 위하여 메쉬는 게임 객체들에 공유될 수 있다.
+	//다음 참조값(Reference Count)은 메쉬가 공유되는 게임 객체의 개수를 나타낸다.	
 	int m_nReferences = 0;
 
 public:
+	//메쉬가 게임 객체에 공유될 때마다 참조값을 1씩 증가시킨다. 
 	void AddRef() { m_nReferences++; }
-	void Release() { if (--m_nReferences <= 0) delete this; }
+	//메쉬를 공유하는 게임 객체가 소멸될 때마다 참조값을 1씩 감소시킨다.
+	//참조값이 0이되면 메쉬를 소멸시킨다. 
+	void Release() { m_nReferences--; if (m_nReferences <= 0) delete this; }
 
 	void ReleaseUploadBuffers();
 
 protected:
+// For The Model Load
+	XMFLOAT3* m_pxmf3Positions = NULL;
+	ID3D12Resource* m_pd3dPositionBuffer = NULL;
+	ID3D12Resource* m_pd3dPositionUploadBuffer = NULL;
+
+	XMFLOAT3* m_pxmf3Normals = NULL;
+	ID3D12Resource* m_pd3dNormalBuffer = NULL;
+	ID3D12Resource* m_pd3dNormalUploadBuffer = NULL;
+
+	XMFLOAT2* m_pxmf2TextureCoords = NULL;
+	ID3D12Resource* m_pd3dTextureCoordBuffer = NULL;
+	ID3D12Resource* m_pd3dTextureCoordUploadBuffer = NULL;
 
 // For The Vertex Buffer
 	ID3D12Resource* m_pd3dVertexBuffer = NULL;
 	ID3D12Resource* m_pd3dVertexUploadBuffer = NULL;
 
-	D3D12_VERTEX_BUFFER_VIEW m_d3dVertexBufferView;											// 입력 버퍼에 대한 View를 생성 하기 위한 변수
+	//D3D12_VERTEX_BUFFER_VIEW m_d3dVertexBufferView;											// 입력 버퍼에 대한 View를 생성 하기 위한 변수
+	UINT							m_nVertexBufferViews = 0;
+	D3D12_VERTEX_BUFFER_VIEW* m_pd3dVertexBufferViews = NULL;
+	// 이제 모델을 불러와야 해서 배열형식으로 변경하였다.
+	// 버퍼뷰의 갯수는 생성시 결정해줘야 한다.(단일은 1개, 모델로드는 대부분3개)
 
 	D3D12_PRIMITIVE_TOPOLOGY m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;	// 정점을 어떤식으로 그릴지 - 삼각형 리스트로
 	UINT m_nSlot = 0;																		// GPU레지스터 슬롯
@@ -81,6 +102,7 @@ protected:
 	BoundingOrientedBox m_xmBoundingBox;
 
 public:
+	//메쉬를 렌더링한다.
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList);
 
 // 절두체 컬링을 위해 만드는 OOBB바운딩 박스의 데이터를 담기 위한 변수
@@ -97,7 +119,18 @@ protected:
 //메쉬의 인덱스를 저장한다(인덱스 버퍼를 Map()하여 읽지 않아도 되도록).
 	UINT* m_pnIndices = NULL;
 };
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+class CModelMesh : public CMesh
+{
+public:
+	CModelMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, char* pstrFileName);
+	virtual ~CModelMesh();
+};
+
+//Mesh를 이용해서 만든 오브젝트들////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
 // Triangle
 class CTriangleMesh : public CMesh
 {
@@ -128,7 +161,6 @@ public:
 	virtual ~CAirplaneMeshDiffused();
 };
 
-
 // Ground
 class CGroundMeshDiffused : public CMesh
 {
@@ -142,10 +174,7 @@ public:
 	virtual ~CGroundMeshDiffused();
 };
 
-
-//Sphere, 구를 만들거야////////////////////////////////////////
-//
-//
+// Sphere
 class CSphereMeshDiffused : public CMesh
 {
 public:
@@ -158,5 +187,4 @@ public:
 	virtual ~CSphereMeshDiffused();
 };
 //
-//
-///////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

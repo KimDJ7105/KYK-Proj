@@ -17,13 +17,13 @@ private:
 public:
 	// Object Count;
 	void AddRef() { m_nReferences++; }
-	void Release() { if (--m_nReferences <= 0) delete this; }
+	void Release() { m_nReferences--; if (m_nReferences <= 0) delete this; }
 
 protected:
-	XMFLOAT4X4 m_xmf4x4World;
-	CMesh* m_pMesh = NULL;
+	XMFLOAT4X4 m_xmf4x4World;			//월드변환행렬
+	CMesh* m_pMesh = NULL;				//적용할 메쉬
 
-	CShader* m_pShader = NULL;
+	CShader* m_pShader = NULL;			//적용할 쉐이더
 
 	bool m_bObjectRender = false;
 
@@ -35,11 +35,11 @@ public:
 	virtual void SetShader(CShader* pShader);
 
 // Animate
-	virtual void Animate(float fTimeElapsed);
+	virtual void Animate(float fTimeElapsed);	//게임 객체를 애니메이션 한다.
 
 // Render
 	virtual void OnPrepareRender();
-	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);	//게임 객체를 렌더링한다
 
 // Rotate
 	void Rotate(XMFLOAT3* pxmf3Axis, float fAngle);

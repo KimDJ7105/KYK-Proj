@@ -12,7 +12,7 @@
 #include "Camera.h"
 
 // CPlayer
-class CPlayer : public CGameObject
+class CPlayer : public CGameObject //플레이어 객체도 게임 객체이므로 CGameObject 클래스에서 상속하여 클래스를 생성한다.
 {
 protected:
 	// Vector
@@ -44,7 +44,7 @@ protected:
 	LPVOID m_pCameraUpdatedContext;		// Camera
 
 	// Camera Mode
-	CCamera* m_pCamera = NULL;
+	CCamera* m_pCamera = NULL;	//플레이어 객체에 포함된 카메라이다.
 
 public:
 	CPlayer();
@@ -72,7 +72,7 @@ public:
 	
 	
 	
-	
+	//플레이어 객체의 위치를 설정한다.
 	void SetPosition(XMFLOAT3& xmf3Position){								// 플레이어의 위치를 xmf3Position 위치로 설정한다.
 		Move(XMFLOAT3(	xmf3Position.x - m_xmf3Position.x,					// xmf3Position Vector에서 현재 플레이어의 Position Vector를 빼면
 						xmf3Position.y - m_xmf3Position.y,					// 현재 플레이어의 위치에서 xmf3Position 방향으로의 벡터가 된다.
