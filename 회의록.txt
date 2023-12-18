@@ -309,3 +309,38 @@
    * 클라이언트 프로그래머에게 제공해야 할 API
         FireGun(int fire_obj, float start_loc_x, float start_loc_y, float start_loc_z, float direction);
 
+2023-12-18
+----------
+1. 기획 발표 PPT
+ - 글자 어긋난 것들 수정
+ - 발표 때 전뇌코어 활용/분쇄기/시체 휴대 개념을 설명하는 보조 슬라이드를 만들어 올것.
+
+2. 진행상황
+ - 클라이언트 모델 로딩 및 이동 구현 (텍스쳐 로딩 미구현)
+
+3. 다음 미팅
+ - 1월 8일 월요일 오후 5:30분
+ - 기획 : 방/복도 매터리얼 입히기
+ - 클라이언트 : 방/복도 매터리얼 로딩, 방 복도 모두 렌더링, 플레이어를 네모 박스로 렌더링
+ - 서버 : 클라이언트 서버 연동 도와 주기
+    * 클라이언트에서 할일 : 네트워크 API 제작
+        * CreateObject(int object_type, int object_id, float x, float y, float z, int animation_id, float direction);
+     * RemoveObject(int object_id);
+      DisplayHitLocation(int object_id, float x, float y, float z)  => 파티클을 이 위치에 표시해라.
+        * ChangeObjectLocation(int object_id, float x, float, y, float z, float direction);
+      ChangeObjectAnimation(int object_id, int animation_id);
+     GetAvatarInforation(float &x, float &y, float &z, float &direction);
+     SetUIInfo (.........)
+   * 클라이언트 프로그래머에게 제공해야 할 API
+        FireGun(int fire_obj, float start_loc_x, float start_loc_y, float start_loc_z, float direction);
+
+4. 서버 근본 구조
+ - 하나의 서버프로그램이 여러개의 방을 동시 컨트롤 한다.
+ - PLAN_A :  쓰레드 마다 자신들이 컨트롤 하는 방이 있고, 그 방에서 오는 모든 패킷은 그 쓰레드에서만 처리한다. asio::io_service가 쓰레드마다 별도로 존재, 상용서버는 이 방식을 사용한다.
+  장 : 멀티쓰레드 프로그래밍이 필요 없다
+    => timer_thread를 별도로 만들면 안된다. => 기껏 멀티쓰레드를 없앴는데, 이거 때문에 멀티쓰레드 프로그래밍을 다시 넣어야 한다.
+    => ASIO의 timer_event를 사용해야 한다. => 1 micro second마다 호출하면 오버헤드가 너무 크다. 간격을 더 넓히도록
+      간격을 넓히면 그것이 그대로 랙이 되어 돌아오므로, 사용자 입력의 쿨타임이나 캐스팅타임 처리는 별도 이벤트에서 시간에 맞춰서 처리하도록 해야 한다.
+- PLAN_B : 모든 쓰레드가 공통으로 모든 방을 컨트롤 한다. 방에서 오는 패킷은 아무 쓰레드나 노는 쓰레드에서 처리한다.
+  장 : 자동적인 로드 밸런싱
+
