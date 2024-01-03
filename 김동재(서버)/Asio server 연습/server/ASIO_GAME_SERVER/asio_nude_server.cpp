@@ -989,16 +989,13 @@ int main()
 	vector <thread > worker_threads;
 	server s(io_service, MY_SERVER_PORT);
 
-	boost::asio::steady_timer event_timer(io_service,boost::asio::chrono::microseconds(1));
+	boost::asio::steady_timer event_timer(io_service,boost::asio::chrono::microseconds(1000));
 	event_timer.async_wait(boost::bind(event_excuter, boost::asio::placeholders::error, &event_timer));
-
-	//thread timer( timer_thread );
 
 	Init_Server();
 
 	for (auto i = 0; i < 8; i++) worker_threads.emplace_back(worker_thread, &io_service);
 	for (auto &th : worker_threads) th.join();
-	//timer.join();
 }
 
 void Init_Server()
@@ -1227,14 +1224,40 @@ void event_excuter(const boost::system::error_code& ec, boost::asio::steady_time
 {
 	if (!ec) {
 		//std::cout << "Hi Im event excuter\n";
+		TIMER_EVENT item_event_init;
+		item_event_init.event_id = EV_SPAWN_ITEM;
+		item_event_init.obj_id = 0;
+		item_event_init.target_id = 0;
+		item_event_init.wakeup_time = chrono::system_clock::now() + 5s;
+
+		timer_queue.push(item_event_init);
 		EVENT ev;
-		while (event_queue.try_pop(ev)) {
+		while (true) {
+			TIMER_EVENT ev;
+			auto current_time = chrono::system_clock::now();
+			if (true == timer_queue.try_pop(ev)) {
+				if (ev.wakeup_time > current_time) {
+					timer_queue.push(ev);		// 최적화 필요
+					// timer_queue에 다시 넣지 않고 처리해야 한다.
+					this_thread::sleep_for(1ms);  // 실행시간이 아직 안되었으므로 잠시 대기
+					continue;
+				}
+			}
 			switch (ev.event_id) {
-			case EC_RANDOM_MOVE: {
+			case EV_RANDOM_MOVE: {
+				shared_ptr<NPC> n = npcs[ev.obj_id];
+				if (nullptr == n) break;
+
+				if (n->state != ST_IDLE) {
+					TIMER_EVENT n_ev{ ev.obj_id, chrono::system_clock::now() + 1s, EV_RANDOM_MOVE, 0 };
+					timer_queue.push(n_ev);
+					break;
+				}
+
 				MoveNpc(ev.obj_id);
 			}
 				break;
-			case EC_SAY_BYE: {
+			case EV_SAY_BYE: {
 				const shared_ptr<session> target_player = players[ev.target_id];
 				if (nullptr == target_player) break;
 
@@ -1252,7 +1275,7 @@ void event_excuter(const boost::system::error_code& ec, boost::asio::steady_time
 				target_player->Send_Packet(&packet);
 			}
 				break;
-			case EC_SAY_HELLO :{
+			case EV_SAY_HELLO :{
 				const shared_ptr<session> target_player = players[ev.target_id];
 				if (nullptr == target_player) break;
 				const shared_ptr<NPC> npc = npcs[ev.obj_id];
@@ -1267,6 +1290,43 @@ void event_excuter(const boost::system::error_code& ec, boost::asio::steady_time
 				npc->ll.unlock();
 			}
 				break;
+			case EV_SPAWN_ITEM: {
+				if (g_item_EA >= MAX_ITEM_EA) {
+					item_event_init.wakeup_time = chrono::system_clock::now() + 15s;
+					timer_queue.push(item_event_init);
+					break;
+				}
+
+				for (int i = 0; i < ITEM_SPAWN_EA; i++) {
+					int id = g_item_ID++;
+
+					items[id] = std::make_shared<Item>(id);
+					shared_ptr<Item> item = items[id];
+					if (item == nullptr) continue;
+
+					for (auto [key, player] : players) {
+						shared_ptr<session> p = player;
+						if (p == nullptr) continue;
+						if (!can_see_item(p->pos_x, p->pos_y, item->pos_x, item->pos_y)) continue;
+
+						sc_packet_put_item pitem;
+						pitem.size = sizeof(sc_packet_put_item);
+						pitem.type = SC_PUT_ITEM;
+						pitem.id = id;
+						pitem.item_type = item->type;
+						pitem.item_x = item->pos_x;
+						pitem.item_y = item->pos_y;
+
+						p->Send_Packet(&pitem);
+					}
+					//std::cout << "Spwan Item" << item->type << "in " << item->pos_x << ", " << item->pos_y << std::endl;
+					g_item_EA += 1;
+				}
+
+				item_event_init.wakeup_time = chrono::system_clock::now() + 5s;
+				timer_queue.push(item_event_init);
+				break;
+			}
 			}
 		}
 
