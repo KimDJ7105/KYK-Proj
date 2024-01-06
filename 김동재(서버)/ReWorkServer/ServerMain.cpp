@@ -1,18 +1,13 @@
 ﻿#include <iostream>
 #include <thread>
-#include <vector>
-#include <set>
-#include <mutex>
-#include <chrono>
-#include <queue>
 #include <atomic>
 #include <concurrent_unordered_map.h>
 
 #include <boost/asio.hpp>
 
+#include "protocol.h"
 
 using namespace std;
-using namespace chrono;
 using boost::asio::ip::tcp;
 
 atomic_int g_user_ID;
@@ -22,18 +17,8 @@ const auto Y_START_POS = 4;
 
 class session;
 
-struct hash<atomic<shared_ptr< session>> > {
-	operator hash <
-}
 
-
-struct comp {
-	bool operator (atomic<shared_ptr<session>>& p1, atomic<shared_ptr<session>>& p2) {
-		return true;
-	}
-};
-
-concurrency::concurrent_unordered_map<int, atomic<shared_ptr<session>>, hash, comp> players;
+concurrency::concurrent_unordered_map<int, atomic<shared_ptr<session>>> players;
 
 void Init_Server()
 {
@@ -182,9 +167,9 @@ public:
 		pl.y = pos_y;
 		Send_Packet(&pl);
 
-		sc_packet_put_player p;
+		sc_packet_put p;
 		p.id = my_id_;
-		p.size = sizeof(sc_packet_put_player);
+		p.size = sizeof(sc_packet_put);
 		p.type = SC_PUT_PLAYER;
 		p.x = pos_x;
 		p.y = pos_y;
