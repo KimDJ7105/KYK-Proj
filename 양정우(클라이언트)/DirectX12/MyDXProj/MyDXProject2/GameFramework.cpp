@@ -427,16 +427,16 @@ void CGameFramework::BuildObjects(int nScene)
 	switch (nScene)
 	{
 		case 0:
-		{
-			m_pScene = new CCanaleScene();
-			m_pScene->BuildObjects(m_pd3dDevice, m_pd3dCommandList);
+		{	// 일단 메인으로 씬이랑 플레이어가 랜더링 되는 곳
+			m_pScene = new CCanaleScene();											//맵 배경 씬 인스턴스
+			m_pScene->BuildObjects(m_pd3dDevice, m_pd3dCommandList);				//를 이용해서 만들기
 
-			CAirplanePlayer* pAirplanePlayer = new CAirplanePlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature());
-			m_pScene->m_pPlayer = m_pPlayer = pAirplanePlayer;
+			CAirplanePlayer* pAirplanePlayer = new CAirplanePlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature());	//비행기 인스턴스 생성하기
+			m_pScene->m_pPlayer = m_pPlayer = pAirplanePlayer;																				//비행기 만들기
 
-			m_pCamera = m_pPlayer->ChangeCamera(THIRD_PERSON_CAMERA, 0.0f);
-			m_pPlayer->CreateShaderVariables(m_pd3dDevice, m_pd3dCommandList);
-			m_pPlayer->SetPosition(XMFLOAT3(0.f, 0.2f, 0.f));
+			m_pCamera = m_pPlayer->ChangeCamera(THIRD_PERSON_CAMERA, 0.0f);			//3인칭으로 시작
+			m_pPlayer->CreateShaderVariables(m_pd3dDevice, m_pd3dCommandList);		//쉐이더 변수
+			m_pPlayer->SetPosition(XMFLOAT3(0.f, 0.2f, 0.f));						//플레이어의 위치
 			break;
 		}
 		case 1:
