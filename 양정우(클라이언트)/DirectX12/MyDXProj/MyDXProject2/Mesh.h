@@ -99,4 +99,3 @@ public:
 	void UpdateVertexPosition(BoundingOrientedBox* pxmBoundingBox);
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList);
 };
-

@@ -252,3 +252,4 @@ void CBoundingBoxMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 	OnPreRender(pd3dCommandList);
 	pd3dCommandList->DrawInstanced(m_nVertices, 1, m_nOffset, 0);
 }
+

@@ -433,9 +433,10 @@ void CGameFramework::BuildObjects(int nScene)
 
 			CAirplanePlayer* pAirplanePlayer = new CAirplanePlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature());
 			m_pScene->m_pPlayer = m_pPlayer = pAirplanePlayer;
-			m_pCamera = m_pPlayer->ChangeCamera(FIRST_PERSON_CAMERA, 0.0f);
+
+			m_pCamera = m_pPlayer->ChangeCamera(THIRD_PERSON_CAMERA, 0.0f);
 			m_pPlayer->CreateShaderVariables(m_pd3dDevice, m_pd3dCommandList);
-			m_pPlayer->SetPosition(XMFLOAT3(0.f, -19.f, 0.f));
+			m_pPlayer->SetPosition(XMFLOAT3(0.f, 0.f, 0.f));
 			break;
 		}
 		case 1:
@@ -447,7 +448,7 @@ void CGameFramework::BuildObjects(int nScene)
 			m_pScene->m_pPlayer = m_pPlayer = pUfoPlayer;
 			m_pCamera = m_pPlayer->ChangeCamera(THIRD_PERSON_CAMERA, 0.0f);
 			m_pPlayer->CreateShaderVariables(m_pd3dDevice, m_pd3dCommandList);
-			m_pPlayer->SetPosition(XMFLOAT3(-3.944041f, 17.696952f, -2.04254f));
+			m_pPlayer->SetPosition(XMFLOAT3(0.f, 0.f, 0.f));
 			break;
 		}
 	}
