@@ -23,7 +23,7 @@ int main()
 {
 	boost::asio::io_context io_service;
 	vector <thread > worker_threads;
-	SERVER s(io_service, MY_SERVER_PORT);
+	SERVER s(io_service, MY_PORT);
 
 	Init_Server();
 

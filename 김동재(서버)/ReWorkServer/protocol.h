@@ -11,7 +11,9 @@
 
 #define MAX_USER 10000
 
-#define MY_SERVER_PORT  4000
+#define MY_SERVER_IP "127.0.0.1"
+#define MY_SERVER_PORT  "4000"
+#define MY_PORT 4000
 
 #define CS_UP    1
 #define CS_DOWN  2

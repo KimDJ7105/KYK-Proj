@@ -18,8 +18,30 @@ BOOL InitInstance(HINSTANCE, int);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK About(HWND, UINT, WPARAM, LPARAM);
 
+void workerthread(boost::asio::io_context* io_con) 
+{
+	io_con->run();
+}
+
 int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
+	//------------------------------------
+	io_context io_con;
+	tcp::resolver resolver(io_con);
+	auto endpoint = resolver.resolve(MY_SERVER_IP, MY_SERVER_PORT);
+
+	tcp::socket sock(io_con);
+	/*async_connect(sock, endpoint,
+		[](const boost::system::error_code& ec, const tcp::endpoint& endpoint)
+		{
+			if (ec) {
+				return -1;
+			}
+		}
+	);
+
+	std::thread serverthread(workerthread, &io_con);*/
+	//------------------------------------
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
@@ -51,6 +73,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 		}
 	}
 	gGameFramework.OnDestroy();
+
+	//serverthread.join();
 
 	return((int)msg.wParam);
 }
