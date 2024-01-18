@@ -127,7 +127,6 @@ public:
 
 	void start()
 	{
-		std::cout << "session start\n";
 		do_read();
 
 		/*sc_packet_login_info pl;
