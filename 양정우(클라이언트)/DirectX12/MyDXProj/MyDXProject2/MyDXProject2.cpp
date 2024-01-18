@@ -53,9 +53,17 @@ public:
 		prev_data_size_ = 0;
 	}
 
-	void Process_Packet(unsigned char* packet_)
+	void Process_Packet(unsigned char* packet)
 	{
-
+		int test = 0;
+		switch (packet[1]) {
+		case SC_LOGIN_INFO :
+			test += 1;
+			break;
+		default: // 지정되지 않은 패킷을 수신받았을 때
+			return;
+			break;
+		}
 	}
 
 	void do_connect(tcp::resolver::results_type endpoint)

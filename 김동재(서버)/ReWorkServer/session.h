@@ -129,7 +129,7 @@ public:
 	{
 		do_read();
 
-		/*sc_packet_login_info pl;
+		sc_packet_login_info pl;
 		pl.id = my_id_;
 		pl.size = sizeof(sc_packet_login_info);
 		pl.type = SC_LOGIN_INFO;
@@ -137,7 +137,7 @@ public:
 		pl.y = pos_y;
 		Send_Packet(&pl);
 
-		sc_packet_put p;
+		/*sc_packet_put p;
 		p.id = my_id_;
 		p.size = sizeof(sc_packet_put);
 		p.type = SC_PUT_PLAYER;
