@@ -31,7 +31,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 	auto endpoint = resolver.resolve(MY_SERVER_IP, MY_SERVER_PORT);
 
 	tcp::socket sock(io_con);
-	/*async_connect(sock, endpoint,
+	async_connect(sock, endpoint,
 		[](const boost::system::error_code& ec, const tcp::endpoint& endpoint)
 		{
 			if (ec) {
@@ -40,7 +40,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 		}
 	);
 
-	std::thread serverthread(workerthread, &io_con);*/
+	std::thread serverthread(workerthread, &io_con);
 	//------------------------------------
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
@@ -74,7 +74,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 	}
 	gGameFramework.OnDestroy();
 
-	//serverthread.join();
+	serverthread.join();
 
 	return((int)msg.wParam);
 }
