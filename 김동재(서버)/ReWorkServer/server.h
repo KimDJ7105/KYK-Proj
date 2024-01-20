@@ -17,6 +17,7 @@ private:
 				if (!ec)
 				{
 					int p_id = GetNewClientID();
+					std::cout << "Client " << p_id << " loged in\n";
 					players[p_id] = std::make_shared<SESSION>(std::move(socket_), p_id);
 					players[p_id]->start();
 					do_accept();

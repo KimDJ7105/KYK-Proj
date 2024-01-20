@@ -137,7 +137,7 @@ public:
 		pl.y = pos_y;
 		Send_Packet(&pl);
 
-		sc_packet_put p;
+		/*sc_packet_put p;
 		p.id = my_id_;
 		p.size = sizeof(sc_packet_put);
 		p.type = SC_PUT_PLAYER;
@@ -154,7 +154,7 @@ public:
 				p.y = pl.second->pos_y;
 				Send_Packet(&p);
 			}
-		}
+		}*/
 	}
 
 	void Send_Packet(void* packet)
