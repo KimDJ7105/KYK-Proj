@@ -15,10 +15,7 @@
 #define MY_SERVER_PORT  "4000"
 #define MY_PORT 4000
 
-#define CS_UP    1
-#define CS_DOWN  2
-#define CS_LEFT  3
-#define CS_RIGHT 4
+#define CS_KEY_INFO 1
 
 #define SC_POS           1
 #define SC_PUT_PLAYER    2
@@ -28,28 +25,10 @@
 
 #pragma pack (push, 1)
 
-struct cs_packet_up {
+struct cs_packet_key_info {
 	BYTE size;
 	BYTE type;
-	unsigned int move_time;
-};
-
-struct cs_packet_down {
-	BYTE size;
-	BYTE type;
-	unsigned int move_time;
-};
-
-struct cs_packet_left {
-	BYTE size;
-	BYTE type;
-	unsigned int move_time;
-};
-
-struct cs_packet_right {
-	BYTE size;
-	BYTE type;
-	unsigned int move_time;
+	DWORD key_info;
 };
 
 struct cs_packet_logout {
