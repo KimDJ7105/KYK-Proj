@@ -36,6 +36,8 @@ CGameFramework::CGameFramework()
 	m_pScene = NULL;
 	m_pCamera = NULL;
 
+	prevDirection = 0;
+
 	_tcscpy_s(m_pszFrameRate, _T("LabProject ("));
 }
 
@@ -490,13 +492,17 @@ void CGameFramework::ProcessInput()
 		if (pKeysBuffer[VK_PRIOR] & 0xF0) dwDirection |= DIR_UP;
 		if (pKeysBuffer[VK_NEXT] & 0xF0) dwDirection |= DIR_DOWN;
 
-		//dwDirection을 서버로 전송
-		cs_packet_key_info key_peck;
-		key_peck.key_info = dwDirection;
-		key_peck.size = sizeof(cs_packet_key_info);
-		key_peck.type = CS_KEY_INFO;
+		if (prevDirection != dwDirection) {
+			//dwDirection을 서버로 전송
+			cs_packet_key_info key_peck;
+			key_peck.key_info = dwDirection;
+			key_peck.size = sizeof(cs_packet_key_info);
+			key_peck.type = CS_KEY_INFO;
 
-		session->Send_Packet(&key_peck);
+			session->Send_Packet(&key_peck);
+
+			prevDirection = dwDirection;
+		}
 	}
 
 	float cxDelta = 0.0f, cyDelta = 0.0f;
