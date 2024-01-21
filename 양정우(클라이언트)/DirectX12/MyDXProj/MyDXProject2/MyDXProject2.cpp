@@ -5,6 +5,8 @@
 #include "MyDXProject2.h"
 #include "GameFramework.h"
 
+#include "Session.h"
+
 #define MAX_LOADSTRING 100
 
 HINSTANCE						ghAppInstance;
@@ -26,8 +28,15 @@ void workerthread(boost::asio::io_context* io_con)
 int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
 	//------------------------------------
+	io_context io_con;
+	tcp::resolver resolver(io_con);
+	auto endpoint = resolver.resolve(MY_SERVER_IP, MY_SERVER_PORT);
 
-	session.do_connect(endpoint);
+	tcp::socket sock(io_con);
+
+	MoveSession(sock);
+	
+	session->do_connect(endpoint);
 
 	std::thread serverthread(workerthread, &io_con);
 	//------------------------------------

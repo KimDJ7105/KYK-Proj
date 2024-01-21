@@ -5,6 +5,8 @@
 #include "stdafx.h"
 #include "GameFramework.h"
 
+#include "Session.h"
+
 CGameFramework::CGameFramework()
 {
 	m_pdxgiFactory = NULL;
@@ -494,7 +496,7 @@ void CGameFramework::ProcessInput()
 		key_peck.size = sizeof(cs_packet_key_info);
 		key_peck.type = CS_KEY_INFO;
 
-		session.Send_Packet(&key_peck);
+		session->Send_Packet(&key_peck);
 	}
 
 	float cxDelta = 0.0f, cyDelta = 0.0f;
