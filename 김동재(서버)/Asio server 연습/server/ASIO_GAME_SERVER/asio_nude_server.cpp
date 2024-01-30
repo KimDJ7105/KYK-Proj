@@ -63,7 +63,7 @@ bool can_see_item(int px, int py, int ix, int iy);
 void MoveNpc(int npc_id);
 void event_excuter(const boost::system::error_code& ec, boost::asio::steady_timer* timer);
 
-enum EVENT_TYPE { EV_RANDOM_MOVE, EV_SAY_HELLO, EV_SAY_BYE, EV_SPAWN_ITEM };
+enum EVENT_TYPE { EV_RANDOM_MOVE, EV_SAY_HELLO, EV_SAY_BYE, EV_SPAWN_ITEM, EV_START_RASER, EV_SET_RASER, EV_SET_DANGER,EV_SET_WHITE};
 struct TIMER_EVENT {
 	int obj_id;
 	chrono::system_clock::time_point wakeup_time;
@@ -967,6 +967,7 @@ int main()
 		}
 	}
 
+	//방 생성==============================
 	for (int i = 0; i < 5; ++i) {
 		for (int j = 0; j < 3; ++j) {
 			int start_x = i * 11;
@@ -976,7 +977,8 @@ int main()
 					col[start_x + x][start_y + y] = TILE_WHITE;
 		}
 	}
-
+	//=====================================
+	//복도 생성============================
 	for (int i = 0; i < 5; ++i) {
 		for (int j = 0; j < 30; ++j) {
 			col[i * 11 + 3][j] = TILE_WHITE;
@@ -990,7 +992,7 @@ int main()
 			col[i][j * 11 + 4] = TILE_WHITE;
 		}
 	}
-
+	//=====================================
 	boost::asio::io_context io_service;
 	vector <thread > worker_threads;
 	server s(io_service, MY_SERVER_PORT);
@@ -1229,7 +1231,8 @@ void MoveNpc(int npc_id)
 void event_excuter(const boost::system::error_code& ec, boost::asio::steady_timer* timer)
 {
 	if (!ec) {
-		//std::cout << "Hi Im event excuter\n";
+		//루프로 들어가기 이전에 필요한 이벤트 삽입
+		//========================================
 		TIMER_EVENT item_event_init;
 		item_event_init.event_id = EV_SPAWN_ITEM;
 		item_event_init.obj_id = 0;
@@ -1237,7 +1240,15 @@ void event_excuter(const boost::system::error_code& ec, boost::asio::steady_time
 		item_event_init.wakeup_time = chrono::system_clock::now() + 5s;
 
 		timer_queue.push(item_event_init);
-		EVENT ev;
+
+		TIMER_EVENT start_raser;
+		start_raser.event_id = EV_START_RASER;
+		start_raser.obj_id = 0;
+		start_raser.target_id = rand() % 15;
+		start_raser.wakeup_time = chrono::system_clock::now() + 10s;
+
+		timer_queue.push(start_raser);
+		//========================================
 		while (true) {
 			TIMER_EVENT ev;
 			auto current_time = chrono::system_clock::now();
@@ -1331,6 +1342,88 @@ void event_excuter(const boost::system::error_code& ec, boost::asio::steady_time
 
 				item_event_init.wakeup_time = chrono::system_clock::now() + 5s;
 				timer_queue.push(item_event_init);
+				break;
+			}
+			case EV_START_RASER: {
+				TIMER_EVENT set_event;
+				set_event.event_id = EV_SET_DANGER;
+				set_event.obj_id = 0;
+				set_event.target_id = ev.target_id;
+				set_event.wakeup_time = chrono::system_clock::now() + 1s;
+
+				timer_queue.push(set_event);
+
+				std::cout << "레이저 시작, 방 번호 : " << ev.target_id << std::endl;
+
+				start_raser.target_id = rand() % 15;
+				start_raser.wakeup_time = chrono::system_clock::now() + 10s;
+
+				timer_queue.push(start_raser);
+
+				break;
+			}
+			case EV_SET_DANGER:
+			case EV_SET_RASER:
+			case EV_SET_WHITE: {
+				int tile_type = TILE_WHITE;
+				if (ev.event_id == EV_SET_DANGER) tile_type = TILE_DANGER;
+				if (ev.event_id == EV_SET_RASER) tile_type = TILE_RED;
+
+				int x = ev.target_id % 5;
+				int y = ev.target_id / 5;
+
+				int start_x = x * 11;
+				int start_y = y * 11;
+
+				for (int i = 0; i < 8; i++) {
+					col[start_x + i][start_y + ev.obj_id] = tile_type;
+				}
+
+				for (auto [key, player] : players) {
+					shared_ptr<session> p = player;
+					if (p == nullptr) continue;
+					
+					sc_packet_change_tile packet;
+
+					packet.size = sizeof(sc_packet_change_tile);
+					packet.type = SC_CHANGE_TILE;
+					packet.col_x = start_x;
+					packet.col_y = start_y + ev.obj_id;
+					packet.tile_type = tile_type;
+
+					p->Send_Packet(&packet);
+				}
+
+				if (ev.event_id == EV_SET_DANGER) {
+					TIMER_EVENT set_event;
+					set_event.event_id = EV_SET_RASER;
+					set_event.obj_id = ev.obj_id;
+					set_event.target_id = ev.target_id;
+					set_event.wakeup_time = chrono::system_clock::now() + 1s;
+
+					timer_queue.push(set_event);
+
+					if (ev.obj_id < 7) {
+						TIMER_EVENT set_event2;
+						set_event2.event_id = EV_SET_DANGER;
+						set_event2.obj_id = ev.obj_id + 1;
+						set_event2.target_id = ev.target_id;
+						set_event2.wakeup_time = chrono::system_clock::now() + 1s;
+
+						timer_queue.push(set_event2);
+					}
+				}
+				else if (ev.event_id == EV_SET_RASER) {
+					TIMER_EVENT set_event;
+					set_event.event_id = EV_SET_WHITE;
+					set_event.obj_id = ev.obj_id;
+					set_event.target_id = ev.target_id;
+					set_event.wakeup_time = chrono::system_clock::now() + 1s;
+
+					timer_queue.push(set_event);
+
+				}
+
 				break;
 			}
 			}
