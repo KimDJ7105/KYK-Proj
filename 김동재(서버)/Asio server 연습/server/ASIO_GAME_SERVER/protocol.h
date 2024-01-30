@@ -38,6 +38,7 @@
 #define SC_GAME_OVER     8
 #define SC_PUT_ITEM      9
 #define SC_REMOVE_ITEM   10
+#define SC_CHANGE_TILE   11
 
 #define	VIEW_UP    1
 #define VIEW_DOWN  2
@@ -176,6 +177,14 @@ struct sc_packet_remove_item {
 	BYTE size;
 	BYTE type;
 	WORD id;
+};
+
+struct sc_packet_change_tile {
+	BYTE size;
+	BYTE type;
+	unsigned short col_x;
+	unsigned short col_y;
+	WORD tile_type;
 };
 
 #pragma pack (pop)
