@@ -369,6 +369,16 @@ void ProcessPacket(char* ptr)
 
 		break;
 	}
+	case SC_CHANGE_TILE :
+	{
+		sc_packet_change_tile* my_packet = reinterpret_cast<sc_packet_change_tile*>(ptr);
+
+		for (int i = 0; i < 8; ++i) {
+			col[my_packet->col_x + i][my_packet->col_y] = my_packet->tile_type;
+		}
+
+		break;
+	}
 	default:
 		printf("Unknown PACKET type [%d]\n", ptr[1]);
 	}
