@@ -433,6 +433,16 @@ void client_main()
 				black_tile.a_move(TILE_WIDTH * i, TILE_WIDTH * j);
 				black_tile.a_draw();
 			}
+			else if (col[tile_x][tile_y] == TILE_DANGER)
+			{
+				danger_tile.a_move(TILE_WIDTH * i, TILE_WIDTH * j);
+				danger_tile.a_draw();
+			}
+			else if (col[tile_x][tile_y] == TILE_RED)
+			{
+				red_tile.a_move(TILE_WIDTH * i, TILE_WIDTH * j);
+				red_tile.a_draw();
+			}
 		}
 	}
 
