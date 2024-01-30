@@ -414,11 +414,11 @@ void client_main()
 			int tile_y = j + g_top_y;
 			if ((tile_x < 0) || (tile_y < 0)) continue;
 			if ((tile_x >= BOARD_WIDTH) || (tile_y >= BOARD_HEIGHT)) continue;
-			if (!col[tile_x][tile_y]) {
+			if (col[tile_x][tile_y] == 0) {
 				white_tile.a_move(TILE_WIDTH * i, TILE_WIDTH * j);
 				white_tile.a_draw();
 			}
-			else
+			else if(col[tile_x][tile_y] == 1)
 			{
 				black_tile.a_move(TILE_WIDTH * i, TILE_WIDTH * j);
 				black_tile.a_draw();
