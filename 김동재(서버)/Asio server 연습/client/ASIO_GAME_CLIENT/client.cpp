@@ -132,8 +132,12 @@ unordered_map <int, OBJECT> players;
 
 OBJECT white_tile;
 OBJECT black_tile;
+OBJECT danger_tile;
+OBJECT red_tile;
 
 sf::Texture* board;
+sf::Texture* danger;
+sf::Texture* red;
 sf::Texture* pieces;
 sf::Texture* items;
 
@@ -170,10 +174,14 @@ void client_initialize()
 	}
 
 	board = new sf::Texture;
+	danger = new sf::Texture;
+	red = new sf::Texture;
 	pieces = new sf::Texture;
 	items = new sf::Texture;
 
 	board->loadFromFile("chessmap.bmp");
+	danger->loadFromFile("dangermap.bmp");
+	red->loadFromFile("redmap.bmp");
 	pieces->loadFromFile("chess3.png");
 	items->loadFromFile("items.png");
 	if (false == g_font.loadFromFile("cour.ttf")) {
@@ -181,6 +189,8 @@ void client_initialize()
 		exit(-1);
 	}
 	white_tile = OBJECT{ *board, 5, 5, TILE_WIDTH, TILE_WIDTH };
+	danger_tile = OBJECT{ *danger, 5,5,TILE_WIDTH,TILE_WIDTH };
+	red_tile = OBJECT{ *red, 5,5,TILE_WIDTH,TILE_WIDTH };
 	black_tile = OBJECT{ *board, 69, 5, TILE_WIDTH, TILE_WIDTH };
 	avatar = OBJECT{ *pieces, 128, 0, 64, 64 };
 	avatar.move(4, 4);
