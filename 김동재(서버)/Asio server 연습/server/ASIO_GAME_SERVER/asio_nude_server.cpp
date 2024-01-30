@@ -86,8 +86,14 @@ public:
 	Item(int _id) {
 		id = _id;
 		type = rand() % 2;
+
 		pos_x = rand() % BOARD_WIDTH;
 		pos_y = rand() % BOARD_HEIGHT;
+
+		while (col[pos_x][pos_y] == 1) {
+			pos_x = rand() % BOARD_WIDTH;
+			pos_y = rand() % BOARD_HEIGHT;
+		}
 	}
 };
 
@@ -412,28 +418,28 @@ private:
 			case CS_UP: 
 				y--;
 				if (y < 0) y = 0;
-				if (col[x][y]) y++;
+				if (col[x][y] == 1) y++;
 				view_dir = VIEW_UP;
 				memcpy(&move_time, &packet[2], sizeof(move_time));
 				break;
 			case CS_DOWN:
 				y++;
 				if (y >= BOARD_HEIGHT) y = BOARD_HEIGHT - 1;
-				if (col[x][y]) y--;
+				if (col[x][y] == 1) y--;
 				view_dir = VIEW_DOWN;
 				memcpy(&move_time, &packet[2], sizeof(move_time));
 				break;
 			case CS_LEFT:
 				x--; 
 				if (x < 0) x = 0;
-				if (col[x][y]) x++;
+				if (col[x][y] == 1) x++;
 				view_dir = VIEW_LEFT;
 				memcpy(&move_time, &packet[2], sizeof(move_time));
 				break;
 			case CS_RIGHT:
 				x++; 
 				if (x >= BOARD_WIDTH) x = BOARD_WIDTH - 1; 
-				if (col[x][y]) x--;
+				if (col[x][y] == 1) x--;
 				view_dir = VIEW_RIGHT;
 				memcpy(&move_time, &packet[2], sizeof(move_time));
 				break;
@@ -900,7 +906,7 @@ private:
 			int x = rand() % BOARD_WIDTH;
 			int y = rand() % BOARD_HEIGHT;
 
-			while (col[x][y]) {
+			while (col[x][y] == 1) {
 				x = rand() % BOARD_WIDTH;
 				y = rand() % BOARD_HEIGHT;
 			}
@@ -957,7 +963,7 @@ int main()
 {
 	for (int i = 0; i < BOARD_WIDTH; ++i) {
 		for (int j = 0; j < BOARD_HEIGHT; ++j) {
-			col[i][j] = true;
+			col[i][j] = 1;
 		}
 	}
 
@@ -967,21 +973,21 @@ int main()
 			int start_y = j * 11;
 			for (int x = 0; x < 8; ++x)
 				for (int y = 0; y < 8; ++y)
-					col[start_x + x][start_y + y] = false;
+					col[start_x + x][start_y + y] = 0;
 		}
 	}
 
 	for (int i = 0; i < 5; ++i) {
 		for (int j = 0; j < 30; ++j) {
-			col[i * 11 + 3][j] = false;
-			col[i * 11 + 4][j] = false;
+			col[i * 11 + 3][j] = 0;
+			col[i * 11 + 4][j] = 0;
 		}
 	}
 
 	for (int j = 0; j < 3; ++j) {
 		for (int i = 0; i < 52; ++i) {
-			col[i][j * 11 + 3] = false;
-			col[i][j * 11 + 4] = false;
+			col[i][j * 11 + 3] = 0;
+			col[i][j * 11 + 4] = 0;
 		}
 	}
 
@@ -1132,10 +1138,10 @@ void MoveNpc(int npc_id)
 	int x = npc->pos_x;
 	int y = npc->pos_y;
 	switch (rand() % 4) {
-	case 0: if (x < (BOARD_WIDTH - 1) && (!col[x+1][y])) x++; break;
-	case 1: if (x > 0 && (!col[x-1][y])) x--; break;
-	case 2: if (y < (BOARD_HEIGHT - 1) && (!col[x][y+1])) y++; break;
-	case 3: if (y > 0 && (!col[x][y-1])) y--; break;
+	case 0: if (x < (BOARD_WIDTH - 1) && (0 == col[x+1][y])) x++; break;
+	case 1: if (x > 0 && (0 == col[x-1][y])) x--; break;
+	case 2: if (y < (BOARD_HEIGHT - 1) && (0 == col[x][y+1])) y++; break;
+	case 3: if (y > 0 && (0 == col[x][y-1])) y--; break;
 	}
 	npc->pos_x = x;
 	npc->pos_y = y;

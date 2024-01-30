@@ -49,7 +49,7 @@
 #define ITEM_SPAWN_EA 5
 #define MAX_ITEM_EA 1000
 
-bool col[BOARD_WIDTH][BOARD_HEIGHT];
+unsigned short col[BOARD_WIDTH][BOARD_HEIGHT];
 
 #pragma pack (push, 1)
 

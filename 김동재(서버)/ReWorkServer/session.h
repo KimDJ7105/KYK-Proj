@@ -35,16 +35,15 @@ private:
 		int y = P->pos_y;
 		int x = P->pos_x;
 		switch (packet[1]) {
-		case CS_UP: y--; if (y < 0) y = 0; break;
-		case CS_DOWN: y++; if (y >= BOARD_HEIGHT) y = BOARD_HEIGHT - 1; break;
-		case CS_LEFT: x--; if (x < 0) x = 0; break;
-		case CS_RIGHT: x++; if (x >= BOARD_WIDTH) x = BOARD_WIDTH - 1; break;
+		case CS_KEY_INFO: {
+			cs_packet_key_info* p = (cs_packet_key_info*)packet;
+			cout << "Get Key Info From Player" << id << " Info : " << p->key_info << endl;
+			break;
+		}
 		default: cout << "Invalid Packet From Client [" << id << "]\n"; system("pause"); exit(-1);
 		}
-		P->pos_x = x;
-		P->pos_y = y;
 
-		sc_packet_pos sp;
+		/*sc_packet_pos sp;
 
 		sp.id = id;
 		sp.size = sizeof(sc_packet_pos);
@@ -53,7 +52,7 @@ private:
 		sp.y = P->pos_y;
 
 		for (auto& pl : players)
-			pl.second->Send_Packet(&sp);
+			pl.second->Send_Packet(&sp);*/
 	}
 
 	void do_read()

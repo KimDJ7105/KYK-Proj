@@ -32,11 +32,6 @@
 
 //서버 연결에 필요한 헤더입니다.
 #include <thread>
-#include <boost/asio.hpp>
-#include "../../../../김동재(서버)/ReWorkServer/protocol.h"
-
-using namespace boost::asio;
-using boost::asio::ip::tcp;
 
 using namespace DirectX;
 using namespace DirectX::PackedVector;
