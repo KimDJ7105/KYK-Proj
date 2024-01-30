@@ -145,7 +145,7 @@ void client_initialize()
 {
 	for (int i = 0; i < BOARD_WIDTH; ++i) {
 		for (int j = 0; j < BOARD_HEIGHT; ++j) {
-			col[i][j] = true;
+			col[i][j] = TILE_BLACK;
 		}
 	}
 
@@ -155,21 +155,21 @@ void client_initialize()
 			int start_y = j * 11;
 			for (int x = 0; x < 8; ++x)
 				for (int y = 0; y < 8; ++y)
-					col[start_x + x][start_y + y] = false;
+					col[start_x + x][start_y + y] = TILE_WHITE;
 		}
 	}
 
 	for (int i = 0; i < 5; ++i) {
 		for (int j = 0; j < 30; ++j) {
-			col[i * 11 + 3][j] = false;
-			col[i * 11 + 4][j] = false;
+			col[i * 11 + 3][j] = TILE_WHITE;
+			col[i * 11 + 4][j] = TILE_WHITE;
 		}
 	}
 
 	for (int j = 0; j < 3; ++j) {
 		for (int i = 0; i < 52; ++i) {
-			col[i][j * 11 + 3] = false;
-			col[i][j * 11 + 4] = false;
+			col[i][j * 11 + 3] = TILE_WHITE;
+			col[i][j * 11 + 4] = TILE_WHITE;
 		}
 	}
 
@@ -424,11 +424,11 @@ void client_main()
 			int tile_y = j + g_top_y;
 			if ((tile_x < 0) || (tile_y < 0)) continue;
 			if ((tile_x >= BOARD_WIDTH) || (tile_y >= BOARD_HEIGHT)) continue;
-			if (col[tile_x][tile_y] == 0) {
+			if (col[tile_x][tile_y] == TILE_WHITE) {
 				white_tile.a_move(TILE_WIDTH * i, TILE_WIDTH * j);
 				white_tile.a_draw();
 			}
-			else if(col[tile_x][tile_y] == 1)
+			else if(col[tile_x][tile_y] == TILE_BLACK)
 			{
 				black_tile.a_move(TILE_WIDTH * i, TILE_WIDTH * j);
 				black_tile.a_draw();
