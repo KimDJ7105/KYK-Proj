@@ -1397,7 +1397,7 @@ void event_excuter(const boost::system::error_code& ec, boost::asio::steady_time
 						for (auto& [key, player] : players) {
 							const shared_ptr<session> p = player;
 							if (p == nullptr) continue;
-							if (p->pos_x == start_x * i && p->pos_y == start_y + ev.obj_id) {
+							if (p->pos_x == start_x + i && p->pos_y == start_y + ev.obj_id) {
 								p->ChangeHP(p->GetID(), 10);
 							}
 
