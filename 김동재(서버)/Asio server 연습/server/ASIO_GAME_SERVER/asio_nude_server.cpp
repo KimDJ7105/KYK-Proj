@@ -315,18 +315,9 @@ private:
 
 						P->Send_Packet(&hit_p);
 						target->Send_Packet(&hit_p);
-						target->hp -= 1;
-
-						if (target->hp <= 0) {
-							//체력이 0된 플레이어 로그 아웃 시키기
-							sc_packet_game_over gameover_packet;
-							gameover_packet.size = sizeof(sc_packet_game_over);
-							gameover_packet.type = SC_GAME_OVER;
-
-							target->Send_Packet(&gameover_packet);
-						}
+						ChangeHP(target->my_id_, 1);
+						
 						std::cout << "Player" << P->my_id_ << " shot Player" << target->my_id_ << " remain bullet : " << P->bullet << std::endl;
-						std::cout << "Player" << target->my_id_ << " remain HP : " << target->hp << std::endl;
 						return;
 					}
 					break;
@@ -471,6 +462,11 @@ private:
 		}
 		P->pos_x = x;
 		P->pos_y = y;
+
+		if (col[P->pos_x][P->pos_y] == TILE_RED) {
+			ChangeHP(P->my_id_, 10);
+		}
+
 
 		sc_packet_pos sp_pos; //이동 패킷 준비
 
@@ -869,6 +865,25 @@ public:
 		memcpy(buff, packet, packet_size);
 		do_write(buff, packet_size);
 	}
+
+	void ChangeHP(int id, int dmg)
+	{
+		shared_ptr<session> P = players[my_id_];
+
+		P->hp -= dmg;
+		if (P->hp <= 0) {
+			//체력이 0된 플레이어 로그 아웃 시키기
+			sc_packet_game_over gameover_packet;
+			gameover_packet.size = sizeof(sc_packet_game_over);
+			gameover_packet.type = SC_GAME_OVER;
+
+			P->Send_Packet(&gameover_packet);
+		}
+
+		std::cout << "Player" << P->my_id_ << " remain HP : " << P->hp << std::endl;
+	}
+
+	int GetID() { return my_id_; }
 };
 
 class server
@@ -1377,6 +1392,16 @@ void event_excuter(const boost::system::error_code& ec, boost::asio::steady_time
 
 				for (int i = 0; i < 8; i++) {
 					col[start_x + i][start_y + ev.obj_id] = tile_type;
+					if (tile_type == TILE_RED) {
+						for (auto& [key, player] : players) {
+							const shared_ptr<session> p = player;
+							if (p == nullptr) continue;
+							if (p->pos_x == start_x * i && p->pos_y == start_y + ev.obj_id) {
+								p->ChangeHP(p->GetID(), 10);
+							}
+
+						}
+					}
 				}
 
 				for (auto [key, player] : players) {
