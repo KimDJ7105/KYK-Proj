@@ -871,6 +871,9 @@ public:
 		shared_ptr<session> P = players[my_id_];
 
 		P->hp -= dmg;
+
+		std::cout << "Player" << P->my_id_ << " remain HP : " << P->hp << std::endl;
+
 		if (P->hp <= 0) {
 			//체력이 0된 플레이어 로그 아웃 시키기
 			sc_packet_game_over gameover_packet;
@@ -879,8 +882,6 @@ public:
 
 			P->Send_Packet(&gameover_packet);
 		}
-
-		std::cout << "Player" << P->my_id_ << " remain HP : " << P->hp << std::endl;
 	}
 
 	int GetID() { return my_id_; }
