@@ -324,13 +324,13 @@
  - 클라이언트 : 방/복도 매터리얼 로딩, 방 복도 모두 렌더링, 플레이어를 네모 박스로 렌더링
  - 서버 : 클라이언트 서버 연동 도와 주기
     * 클라이언트에서 할일 : 네트워크 API 제작
-        * CreateObject(int object_type, int object_id, float x, float y, float z, int animation_id, float direction);
+     * CreateObject(int object_type, int object_id, float x, float y, float z, int animation_id, float direction);
      * RemoveObject(int object_id);
-      DisplayHitLocation(int object_id, float x, float y, float z)  => 파티클을 이 위치에 표시해라.
-        * ChangeObjectLocation(int object_id, float x, float, y, float z, float direction);
-      ChangeObjectAnimation(int object_id, int animation_id);
-     GetAvatarInforation(float &x, float &y, float &z, float &direction);
-     SetUIInfo (.........)
+     * DisplayHitLocation(int object_id, float x, float y, float z)  => 파티클을 이 위치에 표시해라.
+     * ChangeObjectLocation(int object_id, float x, float, y, float z, float direction);
+     * ChangeObjectAnimation(int object_id, int animation_id);
+     * GetAvatarInforation(float &x, float &y, float &z, float &direction);
+     * SetUIInfo (.........)
    * 클라이언트 프로그래머에게 제공해야 할 API
         FireGun(int fire_obj, float start_loc_x, float start_loc_y, float start_loc_z, float direction);
 
@@ -414,3 +414,35 @@
 
 3. 다음미팅
  - 2월 5일 월요일 오후 5시 30분
+
+2024-02-05
+------------
+1. 진행상황
+ - 클라이언트 : 
+  * 서버연동 : 커넥트와 패킷전송이 되는데, 클라이언트에서 Object의 상태 변경이 잘 안됨.
+ - 리깅과 애니메이션 
+ - 서버 : 레이저 구현.
+
+2. ToDo
+ - 서버 연동 :  서버에게 만들어 줄 API => 다른 플레이어 객체, 다른 플레이어 객체를 담는 컨테이너, (다른 플레이어 객체를 생성하는 함수) 메소드 : 이동, 렌더, 애니메이션 세팅....
+    * 클라이언트에서 할일 : 네트워크 API 제작
+     * CreateObject(int object_type, int object_id, float x, float y, float z, int animation_id, float direction);
+     * RemoveObject(int object_id);
+     * DisplayHitLocation(int object_id, float x, float y, float z)  => 파티클을 이 위치에 표시해라.
+     * ChangeObjectLocation(int object_id, float x, float, y, float z, float direction);
+     * ChangeObjectAnimation(int object_id, int animation_id);
+     * GetAvatarInforation(float &x, float &y, float &z, float &direction);
+     * SetUIInfo (.........)
+   * 클라이언트 프로그래머에게 제공해야 할 API
+        FireGun(int fire_obj, float start_loc_x, float start_loc_y, float start_loc_z, float direction)
+
+ - 클라이언트 : 텍스쳐 매핑, 애니메이션
+ - 중점 연구 과제 : 시작
+  * 클라이언트 : 파티클과 Object사이의 충돌 처리 : 문제는 없는데 다른 팀에서 너무 많이 써먹어서 식상하다.
+    * 충돌 위치에 그을린 흔적 추가.
+   => 중점 연구과제 할때가 아니고  서버연동 (0순위),  텍스쳐 매핑 (1순위), 애니메이션 (2순위)
+ * 서버 : Boost ASIO => 그대로 진행 (멀티 방 구현)
+ * 기획 : 참신한 기획 (두뇌코어를 활용한 사망플레이어의 게임 참가) + 모델링 (시간이 모자라면 구입해서 사용할 것) => 기획서 작성(세계관, 스토리)
+
+3. 다음 미팅
+ - 2월 19일 월요일 오후 5시 30분
