@@ -320,7 +320,7 @@ void CCanaleScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 {
 	CScene::BuildObjects(pd3dDevice, pd3dCommandList);
 
-	m_nObjectShaders = 2;
+	m_nObjectShaders = 1;
 	m_ppObjectShaders = new CObjectsShader * [m_nObjectShaders];
 
 	CObjectsShader* pObjectShader = new CObjectsShader();

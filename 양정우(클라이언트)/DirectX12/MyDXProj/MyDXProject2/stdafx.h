@@ -48,7 +48,7 @@ using Microsoft::WRL::ComPtr;
 #define SPOT_LIGHT				2
 #define DIRECTIONAL_LIGHT		3
 
-#define MAX_NUM_OBJECT 1000
+#define MAX_NUM_OBJECT 10
 
 enum
 {

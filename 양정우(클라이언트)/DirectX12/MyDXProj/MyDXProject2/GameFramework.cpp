@@ -50,6 +50,8 @@ bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	m_hInstance = hInstance;
 	m_hWnd = hMainWnd;
 
+	m_pObjects = new ObjectMgr();
+
 	CreateDirect3DDevice();
 	CreateCommandQueueAndList();
 	CreateRtvAndDsvDescriptorHeaps();
@@ -443,9 +445,8 @@ void CGameFramework::BuildObjects(int nScene)
 	m_pPlayer->SetPosition(XMFLOAT3(0.f, 0.2f, 0.f));						//플레이어의 위치
 	m_pPlayer->SetType(PLAYER_TYPE);
 	
-
-	//m_pObjects->AddObject(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature(), XMFLOAT3(0.f, 0.2f, 0.f), PLAYER_TYPE);
-
+	m_pObjects->AddObject(m_pPlayer, PLAYER_TYPE);
+	
 
 	m_pd3dCommandList->Close();
 	ID3D12CommandList *ppd3dCommandLists[] = { m_pd3dCommandList };
@@ -598,6 +599,8 @@ void CGameFramework::FrameAdvance()
 
 	// 오브젝트 매니저에 있어야할 코드
 	if (m_pPlayer) m_pPlayer->Render(m_pd3dCommandList, m_pCamera);
+
+	XMFLOAT3 nowPosition = m_pObjects->GetObjectsPosition(PLAYER_TYPE);
 
 	//if (m_bRenderBoundingBox) m_pScene->RenderBoundingBox(m_pd3dCommandList, m_pCamera);
 

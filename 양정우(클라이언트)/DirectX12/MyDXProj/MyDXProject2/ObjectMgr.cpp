@@ -28,7 +28,7 @@ ObjectMgr::~ObjectMgr()
 	}
 }
 
-int ObjectMgr::AddObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dRootSignagure, XMFLOAT3 xmf3Position, int type)
+int ObjectMgr::AddObject(CPlayer* pPlayer, int type)
 {
 	int index = -1;
 	for (int i = 0; i < MAX_NUM_OBJECT; i++)
@@ -42,11 +42,8 @@ int ObjectMgr::AddObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 
 	if (index >= 0)
 	{
-		m_Objects[index] = new CBoxPlayer(pd3dDevice, pd3dCommandList, pd3dRootSignagure);
-		m_Objects[index]->CreateShaderVariables(pd3dDevice, pd3dCommandList);
-		m_Objects[index]->SetPosition(xmf3Position);
-		m_Objects[index]->SetType(PLAYER_TYPE);
-		
+		m_Objects[index] = pPlayer;
+		m_Objects[index]->SetType(type);
 		return index;
 	}
 
@@ -69,4 +66,23 @@ void ObjectMgr::DrawAllObjects(ID3D12GraphicsCommandList* pd3dCommandList, CCame
 	//		m_Objects[i]->Draw(renderer);		// 드로우를 할때도 포인터를 넘길것이다. 이러면 중복되는 코드를 막을 수 있다.
 	//	}
 	//}
+}
+
+XMFLOAT3 ObjectMgr::GetObjectsPosition(int type)
+{
+	for (int i = 0; i < MAX_NUM_OBJECT; i++)
+	{
+		if (m_Objects[i] != NULL)
+		{
+			if (m_Objects[i]->m_type == type)
+			{
+				return m_Objects[i]->GetPosition();
+			}
+			else
+			{
+
+			}
+		}
+	}
+	
 }
