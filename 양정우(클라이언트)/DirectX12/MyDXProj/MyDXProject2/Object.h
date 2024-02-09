@@ -81,6 +81,7 @@ public:
 	UINT							m_nMaterials = 0; 
 	CMaterial						**m_ppMaterials = NULL;
 
+
 protected:
 	ID3D12Resource					*m_pd3dcbGameObject = NULL;
 
@@ -125,4 +126,11 @@ public:
 	void Rotate(XMFLOAT3 *pxmf3Axis, float fAngle);
 
 	void LoadGameObjectFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, char *pstrFileName);
+
+
+
+	// Object Mgr를 만들면서 추가한 코드
+	void SetType(int type);
+	int m_type;
+
 };

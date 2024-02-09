@@ -122,14 +122,14 @@ public:
 };
 
 // CPlayer - Airplane
-class CAirplanePlayer : public CPlayer
+class CBoxPlayer : public CPlayer
 {
 public:
-	CAirplanePlayer(
+	CBoxPlayer(
 		ID3D12Device* pd3dDevice, 
 		ID3D12GraphicsCommandList* pd3dCommandList,
 		ID3D12RootSignature* pd3dGraphicsRootSignature);
-	virtual ~CAirplanePlayer();
+	virtual ~CBoxPlayer();
 
 	virtual CCamera* ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed);
 

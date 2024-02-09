@@ -428,34 +428,24 @@ void CGameFramework::BuildObjects(int nScene)
 {
 	m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
 
-	switch (nScene)
-	{
-		case 0:
-		{	// 일단 메인으로 씬이랑 플레이어가 랜더링 되는 곳
-			m_pScene = new CCanaleScene();											//맵 배경 씬 인스턴스
-			m_pScene->BuildObjects(m_pd3dDevice, m_pd3dCommandList);				//를 이용해서 만들기
 
-			CAirplanePlayer* pAirplanePlayer = new CAirplanePlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature());	//비행기 인스턴스 생성하기
-			m_pScene->m_pPlayer = m_pPlayer = pAirplanePlayer;																				//비행기 만들기
+	// 일단 메인으로 씬이랑 플레이어가 랜더링 되는 곳
+	m_pScene = new CCanaleScene();											//맵 배경 씬 인스턴스
+	m_pScene->BuildObjects(m_pd3dDevice, m_pd3dCommandList);				//를 이용해서 만들기
 
-			m_pCamera = m_pPlayer->ChangeCamera(THIRD_PERSON_CAMERA, 0.0f);			//3인칭으로 시작
-			m_pPlayer->CreateShaderVariables(m_pd3dDevice, m_pd3dCommandList);		//쉐이더 변수
-			m_pPlayer->SetPosition(XMFLOAT3(0.f, 0.2f, 0.f));						//플레이어의 위치
-			break;
-		}
-		case 1:
-		{
-			m_pScene = new CNightScene();
-			m_pScene->BuildObjects(m_pd3dDevice, m_pd3dCommandList);
+	CBoxPlayer* pBoxPlayer = new CBoxPlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature());	// 박스 인스턴스 생성하기
+	m_pPlayer = pBoxPlayer;
+	
+	m_pScene->m_pPlayer = m_pPlayer;
 
-			CUfoPlayer* pUfoPlayer = new CUfoPlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature());
-			m_pScene->m_pPlayer = m_pPlayer = pUfoPlayer;
-			m_pCamera = m_pPlayer->ChangeCamera(THIRD_PERSON_CAMERA, 0.0f);
-			m_pPlayer->CreateShaderVariables(m_pd3dDevice, m_pd3dCommandList);
-			m_pPlayer->SetPosition(XMFLOAT3(0.f, 0.f, 0.f));
-			break;
-		}
-	}
+	m_pCamera = m_pPlayer->ChangeCamera(THIRD_PERSON_CAMERA, 0.0f);			//3인칭으로 시작
+	m_pPlayer->CreateShaderVariables(m_pd3dDevice, m_pd3dCommandList);		//쉐이더 변수
+	m_pPlayer->SetPosition(XMFLOAT3(0.f, 0.2f, 0.f));						//플레이어의 위치
+	m_pPlayer->SetType(PLAYER_TYPE);
+	
+
+	//m_pObjects->AddObject(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature(), XMFLOAT3(0.f, 0.2f, 0.f), PLAYER_TYPE);
+
 
 	m_pd3dCommandList->Close();
 	ID3D12CommandList *ppd3dCommandLists[] = { m_pd3dCommandList };
@@ -605,9 +595,11 @@ void CGameFramework::FrameAdvance()
 #ifdef _WITH_PLAYER_TOP
 	m_pd3dCommandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
 #endif
+
+	// 오브젝트 매니저에 있어야할 코드
 	if (m_pPlayer) m_pPlayer->Render(m_pd3dCommandList, m_pCamera);
 
-	if (m_bRenderBoundingBox) m_pScene->RenderBoundingBox(m_pd3dCommandList, m_pCamera);
+	//if (m_bRenderBoundingBox) m_pScene->RenderBoundingBox(m_pd3dCommandList, m_pCamera);
 
 	d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;

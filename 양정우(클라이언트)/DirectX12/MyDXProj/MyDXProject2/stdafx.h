@@ -48,6 +48,13 @@ using Microsoft::WRL::ComPtr;
 #define SPOT_LIGHT				2
 #define DIRECTIONAL_LIGHT		3
 
+#define MAX_NUM_OBJECT 1000
+
+enum
+{
+	PLAYER_TYPE = 0
+};
+
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")

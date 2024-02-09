@@ -3,6 +3,7 @@
 #include "Timer.h"
 #include "Player.h"
 #include "Scene.h"
+#include "ObjectMgr.h"
 
 class CGameFramework
 {
@@ -93,5 +94,7 @@ private:
 
 	CGameTimer					m_GameTimer;
 	_TCHAR						m_pszFrameRate[50];
+
+	ObjectMgr					*m_pObjects = NULL;
 };
 

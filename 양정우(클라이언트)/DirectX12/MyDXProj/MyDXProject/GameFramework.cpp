@@ -358,7 +358,7 @@ void CGameFramework::BuildObjects()
 
 //플레이어 게임 객체를 생성하고 카메라와 위치를 설정한다.
 	// 이제 Airplane의 Camera Mode에 따라서 카메라를 만든다.
-	CAirplanePlayer* pAirplanePlayer = new CAirplanePlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature());
+	CBoxPlayer* pAirplanePlayer = new CBoxPlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature());
 	m_pPlayer = pAirplanePlayer;
 	m_pCamera = m_pPlayer->GetCamera();
 

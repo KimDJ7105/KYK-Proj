@@ -320,13 +320,15 @@ void CCanaleScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 {
 	CScene::BuildObjects(pd3dDevice, pd3dCommandList);
 
-	m_nObjectShaders = 1;
+	m_nObjectShaders = 2;
 	m_ppObjectShaders = new CObjectsShader * [m_nObjectShaders];
 
 	CObjectsShader* pObjectShader = new CObjectsShader();
 	pObjectShader->CreateShader(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 	pObjectShader->BuildObjects(pd3dDevice, pd3dCommandList, "Models/CanaleScene/Scene.bin");
 	m_ppObjectShaders[0] = pObjectShader;
+
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

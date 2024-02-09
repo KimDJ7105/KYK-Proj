@@ -377,3 +377,9 @@ void CGameObject::LoadGameObjectFromFile(ID3D12Device *pd3dDevice, ID3D12Graphic
 
 	::fclose(pFile);
 }
+
+
+void CGameObject::SetType(int type)
+{
+	m_type = type;
+}

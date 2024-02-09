@@ -240,7 +240,7 @@ void CPlayer::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamer
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-CAirplanePlayer::CAirplanePlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, void *pContext) : CPlayer(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, pContext)
+CBoxPlayer::CBoxPlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, void *pContext) : CPlayer(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, pContext)
 {
 	LoadGameObjectFromFile(pd3dDevice, pd3dCommandList, "Models/Player/BoxPlayer3.bin");
 
@@ -251,21 +251,21 @@ CAirplanePlayer::CAirplanePlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommand
 	SetShader(pShader);
 }
 
-CAirplanePlayer::~CAirplanePlayer()
+CBoxPlayer::~CBoxPlayer()
 {
 }
 
-void CAirplanePlayer::OnPrepareRender()
+void CBoxPlayer::OnPrepareRender()
 {
 	CPlayer::OnPrepareRender();
 }
 
-void CAirplanePlayer::ReleaseShaderVariables()
+void CBoxPlayer::ReleaseShaderVariables()
 {
 	CPlayer::ReleaseShaderVariables();
 }
 
-CCamera *CAirplanePlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
+CCamera *CBoxPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
 {
 	DWORD nCurrentCameraMode = (m_pCamera) ? m_pCamera->GetMode() : 0x00;
 	if (nCurrentCameraMode == nNewCameraMode) return(m_pCamera);

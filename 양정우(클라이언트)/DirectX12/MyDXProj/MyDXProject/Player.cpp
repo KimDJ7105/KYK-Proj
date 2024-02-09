@@ -358,7 +358,7 @@ void CPlayer::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamer
 }
 
 // CPlayer - Airplane
-CAirplanePlayer::CAirplanePlayer(
+CBoxPlayer::CBoxPlayer(
 	ID3D12Device* pd3dDevice, 
 	ID3D12GraphicsCommandList* pd3dCommandList, 
 	ID3D12RootSignature* pd3dGraphicsRootSignature)
@@ -384,11 +384,11 @@ CAirplanePlayer::CAirplanePlayer(
 	SetShader(pShader);
 }
 
-CAirplanePlayer::~CAirplanePlayer()
+CBoxPlayer::~CBoxPlayer()
 {
 }
 
-CCamera* CAirplanePlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
+CCamera* CBoxPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
 {
 	//카메라를 변경할 때 호출되는 함수이다. nNewCameraMode는 새로 설정할 카메라 모드이다.
 	DWORD nCurrentCameraMode = (m_pCamera) ? m_pCamera->GetMode() : 0x00;
@@ -461,7 +461,7 @@ CCamera* CAirplanePlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
 
 }
 
-void CAirplanePlayer::OnPrepareRender()
+void CBoxPlayer::OnPrepareRender()
 {
 	CPlayer::OnPrepareRender();
 
