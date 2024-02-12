@@ -8,6 +8,15 @@ class MonoBehaviour;
 class Camera;
 class Light;
 
+enum class GAMEOBJECT_TYPE
+{
+	DEFAULT,
+	PLAYER,
+	OTHER_PLAYER,
+
+	TYPE_END
+};
+
 class GameObject : public Object, public enable_shared_from_this<GameObject>
 {
 public:
@@ -29,8 +38,18 @@ public:
 
 	void AddComponent(shared_ptr<Component> component);
 
+	void SetCheckFrustum(bool checkFrustum) { _chechFrustum = checkFrustum; }
+	bool GetCheckFrustum() { return _chechFrustum; }
+
+	void SetObjectType(GAMEOBJECT_TYPE type) { _type = type; }
+	GAMEOBJECT_TYPE GetObjectType() { return _type; }
+
 private:
 	array<shared_ptr<Component>, FIXED_COMPONENT_COUNT> _components;
 	vector<shared_ptr<MonoBehaviour>> _scripts;
+
+	bool _chechFrustum = true;
+
+	GAMEOBJECT_TYPE _type = GAMEOBJECT_TYPE::DEFAULT;
 };
 

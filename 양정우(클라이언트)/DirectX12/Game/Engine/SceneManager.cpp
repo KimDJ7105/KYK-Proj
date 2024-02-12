@@ -18,6 +18,24 @@ void SceneManager::Update()
 	if (_activeScene == nullptr)
 		return;
 
+	// TODO: 플레이어가 입장했을때 오브젝트를 추가함
+	/*if (판단변수 == true)
+	{
+		add object;
+		add object to object manager;
+		set object OTHER_PLAYER
+		판단변수 false
+	}*/
+
+	// 플레이어의 좌표를 알 수 있음
+	Vec3 temp = _player->GetTransform()->GetLocalPosition();
+	
+	// 내가 other player라고 지정하고 넣은 애들의 좌표도 알 수 있음
+	for (auto& otherPlayer : _otherPlayer)
+	{
+		Vec3 temp2 = otherPlayer->GetTransform()->GetLocalPosition();
+	}
+
 	_activeScene->Update();
 	_activeScene->LateUpdate();
 	_activeScene->FinalUpdate();
@@ -51,13 +69,18 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 	camera->AddComponent(make_shared<Camera>());
 	camera->AddComponent(make_shared<TestCameraScript>());
 	camera->GetTransform()->SetLocalPosition(Vec3(0.f, 0.f, 0.f));
+	camera->SetObjectType(GAMEOBJECT_TYPE::PLAYER);
 	scene->AddGameObject(camera);
+
+	_player = camera;//카메라를 플레이어로 설정
+	//camera->GetTransform()->GetLocalPosition()
 #pragma endregion
 
 #pragma region SkyBox
 	{
 		shared_ptr<GameObject> skybox = make_shared<GameObject>();
 		skybox->AddComponent(make_shared<Transform>());
+		skybox->SetCheckFrustum(false);
 		shared_ptr<MeshRenderer> meshRenderer = make_shared<MeshRenderer>();
 		{
 			shared_ptr<Mesh> sphereMesh = GET_SINGLE(Resources)->LoadSphereMesh();
@@ -80,11 +103,11 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 #pragma endregion
 
 #pragma region Sphere
-	/*{
-		shared_ptr<GameObject> sphere = make_shared<GameObject>();
+	{
+		/*shared_ptr<GameObject> sphere = make_shared<GameObject>();
 		sphere->AddComponent(make_shared<Transform>());
 		sphere->GetTransform()->SetLocalScale(Vec3(100.f, 100.f, 100.f));
-		sphere->GetTransform()->SetLocalPosition(Vec3(0.f, 0.f, 150.f));
+		sphere->GetTransform()->SetLocalPosition(Vec3(0.f, 100.f, 150.f));
 		shared_ptr<MeshRenderer> meshRenderer = make_shared<MeshRenderer>();
 		{
 			shared_ptr<Mesh> sphereMesh = GET_SINGLE(Resources)->LoadSphereMesh();
@@ -101,8 +124,8 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 			meshRenderer->SetMaterial(material);
 		}
 		sphere->AddComponent(meshRenderer);
-		scene->AddGameObject(sphere);
-	}*/
+		scene->AddGameObject(sphere);*/
+	}
 #pragma endregion
 
 #pragma region Cube
@@ -131,6 +154,7 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 		}
 		cube->AddComponent(meshRenderer);
 		scene->AddGameObject(cube);
+		_otherPlayer.push_back(cube);
 	}
 #pragma endregion
 
