@@ -20,9 +20,6 @@
     <ClInclude Include="Client.h">
       <Filter>소스 파일\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="framework.h">
-      <Filter>소스 파일\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="Resource.h">
       <Filter>소스 파일\Utils</Filter>
     </ClInclude>

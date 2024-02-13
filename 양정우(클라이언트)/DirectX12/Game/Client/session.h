@@ -1,10 +1,5 @@
 #pragma once
-#include <boost/asio.hpp>
-#include "../../../../김동재(서버)/ReWorkServer/protocol.h"
-
-using namespace boost::asio;
-using boost::asio::ip::tcp;
-
+#include "pch.h"
 //================================================================================
 //서버 통신을 위한 SESSION Class
 class SESSION {
