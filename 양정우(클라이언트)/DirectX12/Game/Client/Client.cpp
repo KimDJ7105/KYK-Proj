@@ -5,6 +5,8 @@
 #include "Client.h"
 #include "Game.h"
 
+#include "session.h"
+
 #define MAX_LOADSTRING 100
 
 // 전역 변수:
@@ -19,6 +21,11 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+
+void workerthread(boost::asio::io_context* io_con)
+{
+    io_con->run();
+}
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -41,6 +48,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
+    //----------------------------------------------------------------
+    io_context io_con;
+    tcp::resolver resolver(io_con);
+    auto endpoint = resolver.resolve(MY_SERVER_IP, MY_SERVER_PORT);
+
+    tcp::socket sock(io_con);
+
+    MoveSession(sock);
+
+    session->do_connect(endpoint);
+
+    std::thread serverthread(workerthread, &io_con);
+    //-----------------------------------------------------------------
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_CLIENT));
 
     MSG msg;
