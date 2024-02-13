@@ -2,6 +2,8 @@
 #include "Component.h"
 #include "GameObject.h"
 
+using std::shared_ptr;
+
 Component::Component(COMPONENT_TYPE type) : Object(OBJECT_TYPE::COMPONENT), _type(type)
 {
 }

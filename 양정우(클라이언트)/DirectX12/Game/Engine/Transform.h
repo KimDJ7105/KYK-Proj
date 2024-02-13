@@ -1,6 +1,8 @@
 #pragma once
 #include "Component.h"
 
+using std::weak_ptr;
+
 class Transform : public Component
 {
 public:

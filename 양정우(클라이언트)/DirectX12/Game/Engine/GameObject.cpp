@@ -6,6 +6,8 @@
 #include "Light.h"
 #include "MonoBehaviour.h"
 
+using std::shared_ptr;
+
 GameObject::GameObject() : Object(OBJECT_TYPE::GAMEOBJECT)
 {
 

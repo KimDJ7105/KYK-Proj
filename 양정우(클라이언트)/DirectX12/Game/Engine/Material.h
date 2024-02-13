@@ -1,6 +1,9 @@
 #pragma once
 #include "Object.h"
 
+using std::shared_ptr;
+using std::array;
+
 class Shader;
 class Texture;
 

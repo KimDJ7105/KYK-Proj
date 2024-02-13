@@ -18,7 +18,7 @@ void Material::PushData()
 	CONST_BUFFER(CONSTANT_BUFFER_TYPE::MATERIAL)->PushData(&_params, sizeof(_params));
 
 	// SRV ¾÷·Îµå
-	for (size_t i = 0; i < _textures.size(); i++)
+	for (std::size_t i = 0; i < _textures.size(); i++)
 	{
 		if (_textures[i] == nullptr)
 			continue;

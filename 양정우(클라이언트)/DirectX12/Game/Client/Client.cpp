@@ -90,6 +90,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         game->Update();
     }
 
+
+    serverthread.join();
     return (int) msg.wParam;
 }
 

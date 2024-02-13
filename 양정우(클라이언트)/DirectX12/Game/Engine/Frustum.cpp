@@ -2,6 +2,8 @@
 #include "Frustum.h"
 #include "Camera.h"
 
+using std::vector;
+
 void Frustum::FinalUpdate()
 {
 	Matrix matViewInv = Camera::S_MatView.Invert();

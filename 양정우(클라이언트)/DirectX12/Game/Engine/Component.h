@@ -1,6 +1,8 @@
 #pragma once
 #include "Object.h"
 
+using std::shared_ptr;
+
 enum class COMPONENT_TYPE : uint8
 {
 	TRANSFORM,
@@ -46,6 +48,6 @@ private:
 
 protected:
 	COMPONENT_TYPE _type;
-	weak_ptr<GameObject> _gameObject;
+	std::weak_ptr<GameObject> _gameObject;
 };
 

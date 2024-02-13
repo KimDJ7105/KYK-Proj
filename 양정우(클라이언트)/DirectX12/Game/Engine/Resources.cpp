@@ -65,7 +65,7 @@ shared_ptr<Mesh> Resources::LoadCubeMesh()
 	idx[30] = 20; idx[31] = 21; idx[32] = 22;
 	idx[33] = 20; idx[34] = 22; idx[35] = 23;
 
-	shared_ptr<Mesh> mesh = make_shared<Mesh>();
+	shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
 	mesh->Init(vec, idx);
 	Add(L"Cube", mesh);
 
@@ -183,7 +183,7 @@ shared_ptr<Mesh> Resources::LoadSphereMesh()
 		idx.push_back(lastRingStartIndex + i + 1);
 	}
 
-	shared_ptr<Mesh> mesh = make_shared<Mesh>();
+	shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
 	mesh->Init(vec, idx);
 	Add(L"Sphere", mesh);
 

@@ -17,7 +17,7 @@ enum class GAMEOBJECT_TYPE
 	TYPE_END
 };
 
-class GameObject : public Object, public enable_shared_from_this<GameObject>
+class GameObject : public Object, public std::enable_shared_from_this<GameObject>
 {
 public:
 	GameObject();
@@ -45,8 +45,8 @@ public:
 	GAMEOBJECT_TYPE GetObjectType() { return _type; }
 
 private:
-	array<shared_ptr<Component>, FIXED_COMPONENT_COUNT> _components;
-	vector<shared_ptr<MonoBehaviour>> _scripts;
+	std::array<shared_ptr<Component>, FIXED_COMPONENT_COUNT> _components;
+	std::vector<shared_ptr<MonoBehaviour>> _scripts;
 
 	bool _chechFrustum = true;
 
