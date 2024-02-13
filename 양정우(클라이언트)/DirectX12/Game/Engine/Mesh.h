@@ -1,6 +1,8 @@
 #pragma once
 #include "Object.h"
 
+using std::vector;
+
 class Material;
 
 // 정점으로 이루어진 물체들

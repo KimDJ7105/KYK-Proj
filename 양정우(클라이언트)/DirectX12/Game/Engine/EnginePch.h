@@ -12,7 +12,7 @@
 #include <array>
 #include <list>
 #include <map>
-using namespace std;
+//using namespace std;
 
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -161,4 +161,4 @@ struct TransformParams
 	Matrix matWVP;
 };
 
-extern unique_ptr<class Engine> GEngine;		// 앞으로 이런 애가 나올것이라고 미리 선언해줌
+extern std::unique_ptr<class Engine> GEngine;		// 앞으로 이런 애가 나올것이라고 미리 선언해줌

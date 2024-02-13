@@ -10,6 +10,9 @@
 #include "Texture.h"
 #include "DepthStencilBuffer.h"
 
+using std::shared_ptr;
+using std::make_shared;
+
 class Engine
 {
 public:

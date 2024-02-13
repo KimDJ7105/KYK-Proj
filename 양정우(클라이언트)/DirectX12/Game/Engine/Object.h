@@ -1,5 +1,7 @@
 #pragma once
 
+using std::wstring;
+
 enum class OBJECT_TYPE : uint8
 {
 	NONE,

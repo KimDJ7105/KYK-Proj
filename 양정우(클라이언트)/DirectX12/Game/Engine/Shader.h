@@ -1,6 +1,8 @@
 #pragma once
 #include "Object.h"
 
+using std::string;
+
 enum class RASTERIZER_TYPE
 {
 	CULL_NONE,

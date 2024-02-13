@@ -13,5 +13,4 @@ using boost::asio::ip::tcp;
 
 #include <vector>
 #include <memory>
-using namespace std;
 

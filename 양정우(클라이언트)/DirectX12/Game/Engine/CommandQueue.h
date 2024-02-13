@@ -8,7 +8,7 @@ class CommandQueue
 public:
 	~CommandQueue();
 
-	void Init(ComPtr<ID3D12Device> device, shared_ptr<SwapChain> swapChain);
+	void Init(ComPtr<ID3D12Device> device, std::shared_ptr<SwapChain> swapChain);
 	void WaitSync();
 
 	// 게임이 그려지는 실질적인 함수들
@@ -38,7 +38,7 @@ private:
 	uint32								_fenceValue = 0;
 	HANDLE								_fenceEvent = INVALID_HANDLE_VALUE;
 
-	shared_ptr<SwapChain>				_swapChain;
+	std::shared_ptr<SwapChain>				_swapChain;
 
 };
 
