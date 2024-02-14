@@ -5,11 +5,15 @@
 #include "Shader.h"
 #include "Texture.h"
 
+using std::make_shared;
+
 class Resources
 {
 	DECLARE_SINGLE(Resources);
 
 public:
+	void Init();
+
 	template<typename T>
 	shared_ptr<T> Load(const wstring& key, const wstring& path);
 
@@ -22,8 +26,19 @@ public:
 	template<typename T>
 	OBJECT_TYPE GetObjectType();
 
+	shared_ptr<Mesh> LoadRectangleMesh();
 	shared_ptr<Mesh> LoadCubeMesh();
 	shared_ptr<Mesh> LoadSphereMesh();
+
+	shared_ptr<Texture> CreateTexture(const wstring& name, DXGI_FORMAT format, uint32 width, uint32 height,
+		const D3D12_HEAP_PROPERTIES& heapProperty, D3D12_HEAP_FLAGS heapFlags,
+		D3D12_RESOURCE_FLAGS resFlags = D3D12_RESOURCE_FLAG_NONE, Vec4 clearColor = Vec4());
+
+	shared_ptr<Texture> CreateTextureFromResource(const wstring& name, ComPtr<ID3D12Resource> tex2D);
+
+
+private:
+	void CreateDefaultShader();
 
 private:
 	using KeyObjMap = std::map<wstring/*key*/, shared_ptr<Object>>;

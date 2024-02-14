@@ -41,15 +41,22 @@ public:
 	void SetCheckFrustum(bool checkFrustum) { _chechFrustum = checkFrustum; }
 	bool GetCheckFrustum() { return _chechFrustum; }
 
-	void SetObjectType(GAMEOBJECT_TYPE type) { _type = type; }
-	GAMEOBJECT_TYPE GetObjectType() { return _type; }
+	void SetLayerIndex(uint8 layer) { _layerIndex = layer; }
+	uint8 GetLayerIndex() { return _layerIndex; }
 
 private:
 	std::array<shared_ptr<Component>, FIXED_COMPONENT_COUNT> _components;
 	std::vector<shared_ptr<MonoBehaviour>> _scripts;
 
 	bool _chechFrustum = true;
+	uint8 _layerIndex = 0;
 
+	//³»°¡ Â§ ÄÚµå--------------------------------
+private:
 	GAMEOBJECT_TYPE _type = GAMEOBJECT_TYPE::DEFAULT;
+
+public:
+	void SetObjectType(GAMEOBJECT_TYPE type) { _type = type; }
+	GAMEOBJECT_TYPE GetObjectType() { return _type; }
 };
 
