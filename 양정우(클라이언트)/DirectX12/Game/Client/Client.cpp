@@ -8,6 +8,14 @@
 
 #define MAX_LOADSTRING 100
 
+// 윈도우 실행시 어떤식으로 동작할지
+enum
+{
+    WINDOW_WIDTH = 800,
+    WINDOW_HEIGHT = 600,
+    IS_WINDOW_MODE = true
+};
+
 // 전역 변수:
 WindowInfo GWindowInfo;
 

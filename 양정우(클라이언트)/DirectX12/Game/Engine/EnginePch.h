@@ -78,8 +78,25 @@ enum class SRV_REGISTER : uint8
 	t2,
 	t3,
 	t4,
+	t5,
+	t6,
+	t7,
+	t8,
+	t9,
 
 	END
+};
+
+// for the compute shader...
+enum class UAV_REGISTER : uint8
+{
+	u0 = static_cast<uint8>(SRV_REGISTER::END),
+	u1,
+	u2,
+	u3,
+	u4,
+
+	END,
 };
 
 enum
@@ -87,17 +104,9 @@ enum
 	SWAP_CHAIN_BUFFER_COUNT = 2,										// 스왑체인 버퍼의 갯수 지정
 	CBV_REGISTER_COUNT = CBV_REGISTER::END,								// CBV의 Register 갯수
 	SRV_REGISTER_COUNT = static_cast<uint8>(SRV_REGISTER::END) - CBV_REGISTER_COUNT,
-	REGISTER_COUNT = CBV_REGISTER_COUNT + SRV_REGISTER_COUNT,			// 각 디스크립터 힙의 그룹마다의 레지스터 갯수
-
-
-};
-
-// 윈도우 실행시 어떤식으로 동작할지
-enum
-{
-	WINDOW_WIDTH = 800,
-	WINDOW_HEIGHT = 600,
-	IS_WINDOW_MODE = true
+	CBV_SRV_REGISTER_COUNT = CBV_REGISTER_COUNT + SRV_REGISTER_COUNT,			// 각 디스크립터 힙의 그룹마다의 레지스터 갯수
+	UAV_REGISTER_COUNT = static_cast<uint8>(UAV_REGISTER::END) - CBV_SRV_REGISTER_COUNT,
+	TOTAL_REGISTER_COUNT = CBV_SRV_REGISTER_COUNT + UAV_REGISTER_COUNT
 };
 
 struct WindowInfo
@@ -143,9 +152,12 @@ public:								\
 // 아래 정의를 사용하려면 Engine.h를 include해주어야 한다.
 // 혹은 현재 위치(헤더)에 Engine.h를 include해주어도 상관없다.
 #define DEVICE				GEngine->GetDevice()->GetDevice()		// 바로 작업이 이루어짐
-#define CMD_LIST			GEngine->GetCmdQueue()->GetCmdList()	// 예약했다가 나중에 이루어짐
-#define ROOT_SIGNATURE		GEngine->GetRootSignature()->GetSignature()
-#define RESOURCE_CMD_LIST	GEngine->GetCmdQueue()->GetResourceCmdList()
+#define GRAPHICS_CMD_LIST	GEngine->GetGraphicsCmdQueue()->GetGraphicsCmdList()	// 예약했다가 나중에 이루어짐
+#define RESOURCE_CMD_LIST	GEngine->GetGraphicsCmdQueue()->GetResourceCmdList()
+#define COMPUTE_CMD_LIST	GEngine->GetComputeCmdQueue()->GetComputeCmdList()
+
+#define GRAPHICS_ROOT_SIGNATURE		GEngine->GetRootSignature()->GetGraphicsRootSignature()
+#define COMPUTE_ROOT_SIGNATURE		GEngine->GetRootSignature()->GetComputeRootSignature()
 
 #define INPUT				GET_SINGLE(Input)
 #define DELTA_TIME			GET_SINGLE(Timer)->GetDeltaTime()

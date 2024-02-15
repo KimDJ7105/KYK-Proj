@@ -236,8 +236,10 @@
     <None Include="SimpleMath.inl" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="..\Resources\Shader\compute.hlsl" />
     <FxCompile Include="..\Resources\Shader\deferred.hlsl" />
     <FxCompile Include="..\Resources\Shader\forward.hlsl" />
+    <FxCompile Include="..\Resources\Shader\lighting.hlsl" />
     <FxCompile Include="..\Resources\Shader\params.hlsl" />
     <FxCompile Include="..\Resources\Shader\skybox.hlsl" />
     <FxCompile Include="..\Resources\Shader\utils.hlsl" />
