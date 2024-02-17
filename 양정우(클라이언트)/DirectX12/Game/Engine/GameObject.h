@@ -8,6 +8,8 @@ class Camera;
 class Light;
 class MonoBehaviour;
 class ParticleSystem;
+class Terrain;
+class BaseCollider;
 
 enum class GAMEOBJECT_TYPE
 {
@@ -37,6 +39,8 @@ public:
 	shared_ptr<Camera> GetCamera();
 	shared_ptr<Light> GetLight();
 	shared_ptr<ParticleSystem> GetParticleSystem();
+	shared_ptr<Terrain> GetTerrain();
+	shared_ptr<BaseCollider> GetCollider();
 
 	void AddComponent(shared_ptr<Component> component);
 
