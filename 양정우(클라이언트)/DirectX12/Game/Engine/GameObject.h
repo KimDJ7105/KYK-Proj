@@ -4,9 +4,10 @@
 
 class Transform;
 class MeshRenderer;
-class MonoBehaviour;
 class Camera;
 class Light;
+class MonoBehaviour;
+class ParticleSystem;
 
 enum class GAMEOBJECT_TYPE
 {
@@ -35,6 +36,7 @@ public:
 	shared_ptr<MeshRenderer> GetMeshRenderer();
 	shared_ptr<Camera> GetCamera();
 	shared_ptr<Light> GetLight();
+	shared_ptr<ParticleSystem> GetParticleSystem();
 
 	void AddComponent(shared_ptr<Component> component);
 
@@ -44,12 +46,16 @@ public:
 	void SetLayerIndex(uint8 layer) { _layerIndex = layer; }
 	uint8 GetLayerIndex() { return _layerIndex; }
 
+	void SetStatic(bool flag) { _static = flag; }
+	bool IsStatic() { return _static; }
+
 private:
 	std::array<shared_ptr<Component>, FIXED_COMPONENT_COUNT> _components;
 	std::vector<shared_ptr<MonoBehaviour>> _scripts;
 
 	bool _chechFrustum = true;
 	uint8 _layerIndex = 0;
+	bool _static = true;
 
 	//³»°¡ Â§ ÄÚµå--------------------------------
 private:

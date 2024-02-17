@@ -15,8 +15,16 @@ public:
 	void FinalUpdate();
 
 	void Render();
+
+	void ClearRTV();
+
+	// 순서 중요
+	void RenderShadow();
+	void RenderDeferred();
 	void RenderLights();
 	void RenderFinal();
+
+	void RenderForward();
 
 private:
 	void PushLightData();
