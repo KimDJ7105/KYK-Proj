@@ -45,6 +45,8 @@ shared_ptr<MeshData> MeshData::LoadFromFBX(const wstring& path)
 	return meshData;
 }
 
+
+
 void MeshData::Load(const wstring& _strFilePath)
 {
 	// TODO

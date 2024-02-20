@@ -147,6 +147,9 @@
     <ClCompile Include="MeshData.cpp">
       <Filter>Object\Resource</Filter>
     </ClCompile>
+    <ClCompile Include="BinaryLoader.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -268,6 +271,9 @@
     </ClInclude>
     <ClInclude Include="MeshData.h">
       <Filter>Object\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="BinaryLoader.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

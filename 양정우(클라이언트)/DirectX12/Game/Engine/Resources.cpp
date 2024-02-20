@@ -334,6 +334,11 @@ shared_ptr<MeshData> Resources::LoadFBX(const wstring& path)
 	return meshData;
 }
 
+shared_ptr<MeshData> Resources::LoadBinaryModel(const wstring& path)
+{
+
+}
+
 void Resources::CreateDefaultShader()
 {
 	// Skybox
