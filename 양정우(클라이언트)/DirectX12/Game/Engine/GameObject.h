@@ -10,6 +10,7 @@ class MonoBehaviour;
 class ParticleSystem;
 class Terrain;
 class BaseCollider;
+class Animator;
 
 enum class GAMEOBJECT_TYPE
 {
@@ -41,6 +42,7 @@ public:
 	shared_ptr<ParticleSystem> GetParticleSystem();
 	shared_ptr<Terrain> GetTerrain();
 	shared_ptr<BaseCollider> GetCollider();
+	shared_ptr<Animator> GetAnimator();
 
 	void AddComponent(shared_ptr<Component> component);
 

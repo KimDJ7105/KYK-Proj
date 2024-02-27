@@ -150,6 +150,12 @@
     <ClCompile Include="BinaryLoader.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="TestDragon.cpp">
+      <Filter>Object\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="Animator.cpp">
+      <Filter>Object\Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -275,6 +281,12 @@
     <ClInclude Include="BinaryLoader.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="TestDragon.h">
+      <Filter>Object\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="Animator.h">
+      <Filter>Object\Component</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SimpleMath.inl">
@@ -313,6 +325,12 @@
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="..\Resources\Shader\terrain.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Resources\Shader\animation.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Resources\Shader\math.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>
