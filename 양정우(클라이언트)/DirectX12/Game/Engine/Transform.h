@@ -2,6 +2,8 @@
 #include "Component.h"
 
 using std::weak_ptr;
+using std::min;
+using std::max;
 
 class Transform : public Component
 {

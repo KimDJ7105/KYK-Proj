@@ -7,6 +7,9 @@
 #include "MeshRenderer.h"
 #include "StructuredBuffer.h"
 
+using std::min;
+using std::max;
+
 Animator::Animator() : Component(COMPONENT_TYPE::ANIMATOR)
 {
 	_computeMaterial = GET_SINGLE(Resources)->Get<Material>(L"ComputeAnimation");

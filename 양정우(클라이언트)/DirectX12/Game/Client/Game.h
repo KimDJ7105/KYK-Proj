@@ -13,8 +13,8 @@ public:
 	void CreateObject(int object_type, int object_id, float x, float y, float z, int animation_id, float direction);
 	void ChangeObjectLocation(int object_id, float x, float y, float z, float direction);
 
-	void MoveSession(tcp::socket& sock);
+	void MoveThisSession(tcp::socket& sock);
 
-	SESSION* GetSession();
+	SESSION* GetGameSession();
 };
 

@@ -66,9 +66,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     tcp::socket sock(io_con);
 
-    _game->MoveSession(sock);
+    _game->MoveThisSession(sock);
 
-    _game->GetSession()->do_connect(endpoint);
+    _game->GetGameSession()->do_connect(endpoint);
 
     std::thread serverthread(workerthread, &io_con);
     //-----------------------------------------------------------------

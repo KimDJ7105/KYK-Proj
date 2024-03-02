@@ -15,9 +15,6 @@
     <Filter Include="소스 파일\Game">
       <UniqueIdentifier>{d49e5cb7-a481-4511-8101-2b2904c324b5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\Server">
-      <UniqueIdentifier>{1f93dfed-515a-47da-a77d-3474b5da12c7}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -34,9 +31,6 @@
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>소스 파일\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="session.h">
-      <Filter>소스 파일\Server</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -62,13 +56,5 @@
     <ClCompile Include="pch.cpp">
       <Filter>소스 파일\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="session.cpp">
-      <Filter>소스 파일\Server</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config">
-      <Filter>소스 파일\Server</Filter>
-    </None>
   </ItemGroup>
 </Project>

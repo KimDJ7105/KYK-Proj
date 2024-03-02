@@ -31,12 +31,12 @@ void Game::ChangeObjectLocation(int object_id, float x, float y, float z, float 
 	GET_SINGLE(SceneManager)->ChangeObjectLocation(object_id, x, y, z, direction);
 }
 
-void Game::MoveSession(tcp::socket& sock)
+void Game::MoveThisSession(tcp::socket& sock)
 {
 	MoveSession(sock);
 }
 
-SESSION* Game::GetSession()
+SESSION* Game::GetGameSession()
 {
-	GetSession();
+	return GetSession();
 }
