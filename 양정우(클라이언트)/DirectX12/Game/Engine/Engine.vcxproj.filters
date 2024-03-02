@@ -28,6 +28,9 @@
     <Filter Include="Object\Component\Collider">
       <UniqueIdentifier>{d4c0e9e4-b281-4153-8dcc-5da601304650}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Server">
+      <UniqueIdentifier>{eae6495e-aede-42ca-b312-2328ebfbd7ff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -155,6 +158,9 @@
     </ClCompile>
     <ClCompile Include="Animator.cpp">
       <Filter>Object\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Client\session.cpp">
+      <Filter>Server</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -287,11 +293,18 @@
     <ClInclude Include="Animator.h">
       <Filter>Object\Component</Filter>
     </ClInclude>
+    <ClInclude Include="..\Client\session.h">
+      <Filter>Server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SimpleMath.inl">
       <Filter>Utils</Filter>
     </None>
+    <None Include="..\Client\packages.config">
+      <Filter>Server</Filter>
+    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Resources\Shader\forward.hlsl">

@@ -4,8 +4,6 @@
 #include "Client.h"
 #include "Game.h"
 
-#include "session.h"
-
 #define MAX_LOADSTRING 100
 
 // 윈도우 실행시 어떤식으로 동작할지

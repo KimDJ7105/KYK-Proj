@@ -13,7 +13,7 @@ void SESSION::Process_Packet(unsigned char* packet)
 	int test = 0;
 	switch (packet[1]) {
 	case SC_LOGIN_INFO:
-		/*sc_packet_login_info* p = reinterpret_cast<sc_packet_login_info*>(packet + 2);
+		sc_packet_login_info* p = reinterpret_cast<sc_packet_login_info*>(packet + 2);
 		int object_type = 0;
 		int object_id = p->id;
 		float x = p->x;
@@ -21,10 +21,10 @@ void SESSION::Process_Packet(unsigned char* packet)
 		float z = 0;
 		int animation_id = 0;
 		float direction = 0;
-		game->CreateAvatar(object_type, object_id, x, y, z, animation_id, direction);*/
+		//game->CreateAvatar(object_type, object_id, x, y, z, animation_id, direction);
 		break;
 	case SC_PUT_PLAYER:
-		/*sc_packet_put* p = reinterpret_cast<sc_packet_put*>(packet + 2);
+		sc_packet_put* p = reinterpret_cast<sc_packet_put*>(packet + 2);
 		int object_type = 0;
 		int object_id = p->id;
 		float x = p->x;
@@ -32,15 +32,15 @@ void SESSION::Process_Packet(unsigned char* packet)
 		float z = 0;
 		int animation_id = 0;
 		float direction = 0;
-		game->CreateObject(object_type, object_id, x, y, z, animation_id, direction);*/
+		//game->CreateObject(object_type, object_id, x, y, z, animation_id, direction);
 		break;
 	case SC_POS:
-		//sc_packet_pos* p = reinterpret_cast<sc_packet_pos*>(packet + 2);
-		//int object_id = p->id;
-		//float x = p->x;
-		//float y = p->y;
-		//float z = 0;		// sock log info에 z에 해당하는 것이 없어 0으로 하였음
-		//float direction = 0;
+		sc_packet_pos* p = reinterpret_cast<sc_packet_pos*>(packet + 2);
+		int object_id = p->id;
+		float x = p->x;
+		float y = p->y;
+		float z = 0;		// sock log info에 z에 해당하는 것이 없어 0으로 하였음
+		float direction = 0;
 		//game->ChangeObjectLocation(object_id, x, y, z, direction);
 		break;
 	default: // 지정되지 않은 패킷을 수신받았을 때

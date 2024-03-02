@@ -1,9 +1,6 @@
 #pragma once
 #include "pch.h"
 
-// 클라이언트가 추가한 코드입니다
-#include "Game.h"
-
 //================================================================================
 //서버 통신을 위한 SESSION Class
 class SESSION {
@@ -27,8 +24,6 @@ public:
 
 	void Send_Packet(void* packet);
 
-	// 클라이언트가 추가한 코드입니다
-	Game* game;
 };
 
 void MoveSession(tcp::socket& sock);
