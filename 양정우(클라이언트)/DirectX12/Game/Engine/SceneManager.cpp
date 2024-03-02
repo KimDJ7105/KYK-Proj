@@ -18,6 +18,8 @@
 #include "MeshData.h"
 #include "TestDragon.h"
 
+shared_ptr<Scene> scene = make_shared<Scene>();
+
 void SceneManager::Update()
 {
 	if (_activeScene == nullptr)
@@ -164,7 +166,7 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 	}
 #pragma endregion
 
-	shared_ptr<Scene> scene = make_shared<Scene>();
+	//shared_ptr<Scene> scene = make_shared<Scene>(); 전역으로 올림
 
 	// 메인카메라를 가장 먼저 추가(안그럼 버그남)
 #pragma region Camera
@@ -185,7 +187,6 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 		scene->AddGameObject(camera);
 
 		_player = camera;//카메라를 플레이어로 설정
-		//camera->GetTransform()->GetLocalPosition()
 	}
 #pragma endregion
 
@@ -1073,18 +1074,47 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 	return scene;
 }
 
-void SceneManager::CreateAvatar()
+void SceneManager::CreateAvatar(int object_type, int object_id, float x, float y, float z, int animation_id, float direction)
 {
 	return;
 }
 
-void SceneManager::CreateObject()
+void SceneManager::CreateObject(int object_type, int object_id, float x, float y, float z, int animation_id, float direction)
 {
-	return;
+	shared_ptr<GameObject> cube = make_shared<GameObject>();
+	cube->AddComponent(make_shared<Transform>());
+	cube->GetTransform()->SetLocalScale(Vec3(10.f, 10.f, 10.f));
+	cube->GetTransform()->SetLocalPosition(Vec3(x, y, z));
+	cube->GetTransform()->SetObjectType(object_type);
+	cube->GetTransform()->SetObjectID(object_id);
+	shared_ptr<MeshRenderer> meshRenderer = make_shared<MeshRenderer>();
+	{
+		shared_ptr<Mesh> cubeMesh = GET_SINGLE(Resources)->LoadCubeMesh();
+		meshRenderer->SetMesh(cubeMesh);
+	}
+	{
+		shared_ptr<Shader> shader = GET_SINGLE(Resources)->Get<Shader>(L"Deferred");
+		shared_ptr<Texture> texture = GET_SINGLE(Resources)->Load<Texture>(L"Leather", L"..\\Resources\\Texture\\Leather.jpg");
+		shared_ptr<Texture> texture2 = GET_SINGLE(Resources)->Load<Texture>(L"Leather_Normal", L"..\\Resources\\Texture\\Leather_Normal.jpg");
+		shared_ptr<Material> material = make_shared<Material>();
+		material->SetShader(shader);
+		material->SetTexture(0, texture);
+		material->SetTexture(1, texture2);
+		meshRenderer->SetMaterial(material);
+	}
+	cube->AddComponent(meshRenderer);
+	//scene->AddGameObject(cube);
+	_otherPlayer.push_back(cube);
 }
 
-void SceneManager::ChangeObjectLocation()
+void SceneManager::ChangeObjectLocation(int object_id, float x, float y, float z, float direction)
 {
-	return;
+	for (auto& otherPlayer : _otherPlayer)
+	{
+		if (otherPlayer->GetTransform()->GetObjectID() == object_id)
+		{
+			otherPlayer->GetTransform()->SetLocalPosition(Vec3(x, y, z));
+		}
+	}
 }
 

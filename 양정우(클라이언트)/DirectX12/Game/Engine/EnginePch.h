@@ -48,13 +48,13 @@ using namespace Microsoft::WRL;
 #endif
 
 #ifdef _DEBUG
-#pragma comment(lib, "FBX\\debug\\libfbxsdk-md.lib")
-#pragma comment(lib, "FBX\\debug\\libxml2-md.lib")
-#pragma comment(lib, "FBX\\debug\\zlib-md.lib")
+#pragma comment(lib, "FBX\\debug_fbx\\libfbxsdk-md.lib")
+#pragma comment(lib, "FBX\\debug_fbx\\libxml2-md.lib")
+#pragma comment(lib, "FBX\\debug_fbx\\zlib-md.lib")
 #else
-#pragma comment(lib, "FBX\\release\libfbxsdk-md.lib")
-#pragma comment(lib, "FBX\\release\libxml2-md.lib")
-#pragma comment(lib, "FBX\\release\\zlib-md.lib")
+#pragma comment(lib, "FBX\\release_fbx\libfbxsdk-md.lib")
+#pragma comment(lib, "FBX\\release_fbx\libxml2-md.lib")
+#pragma comment(lib, "FBX\\release_fbx\\zlib-md.lib")
 #endif
 
 // °¢Á¾ typedef

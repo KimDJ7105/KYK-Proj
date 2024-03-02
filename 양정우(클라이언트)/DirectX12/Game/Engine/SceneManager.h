@@ -38,14 +38,14 @@ private:
 	std::array<wstring, MAX_LAYER> _layerNames;
 	std::map<wstring, uint8> _layerIndex;
 
-	//내가 짠 코드--------------------------------
+	//여기부턴 서버연결을 위한 도구--------------------------------
 	shared_ptr<GameObject> _player;
 	std::vector<shared_ptr<GameObject>> _otherPlayer;
 	// TODO: bool 무언가 플레이어가 입장했음을 알수있는 판단변수
 
 public:
-	void CreateAvatar();
-	void CreateObject();
-	void ChangeObjectLocation();
+	void CreateAvatar(int object_type, int object_id, float x, float y, float z, int animation_id, float direction);
+	void CreateObject(int object_type, int object_id, float x, float y, float z, int animation_id, float direction);
+	void ChangeObjectLocation(int object_id, float x, float y, float z, float direction);
 };
 

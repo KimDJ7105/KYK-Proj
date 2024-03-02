@@ -18,15 +18,15 @@ void Game::Update()
 
 void Game::CreateAvatar(int object_type, int object_id, float x, float y, float z, int animation_id, float direction)
 {
-	GET_SINGLE(SceneManager)->CreateAvatar();
+	GET_SINGLE(SceneManager)->CreateAvatar(object_type, object_id, x, y, z, animation_id, direction);
 }
 
 void Game::CreateObject(int object_type, int object_id, float x, float y, float z, int animation_id, float direction)
 {
-	GET_SINGLE(SceneManager)->CreateObject();
+	GET_SINGLE(SceneManager)->CreateObject(object_type, object_id, x, y, z, animation_id, direction);
 }
 
 void Game::ChangeObjectLocation(int object_id, float x, float y, float z, float direction)
 {
-	GET_SINGLE(SceneManager)->ChangeObjectLocation();
+	GET_SINGLE(SceneManager)->ChangeObjectLocation(object_id, x, y, z, direction);
 }

@@ -53,5 +53,15 @@ private:
 	Matrix _matWorld = {};	// 계산한 월드변환행렬을 저장하기 위한 용도
 
 	weak_ptr<Transform> _parent;
+
+public:
+	void SetObjectID(int objectID) { _objectID = objectID; }
+	int GetObjectID() { return _objectID; }
+	void SetObjectType(int objectType) { _objectType = objectType; }
+	int GetObjectType() { return _objectType; }
+
+private:
+	int _objectID;
+	int _objectType;	//0 = player, 1 = otherplayer, 2 = mapObject
 };
 
