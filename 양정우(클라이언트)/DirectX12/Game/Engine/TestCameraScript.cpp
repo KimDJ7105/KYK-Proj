@@ -7,6 +7,8 @@
 #include "Timer.h"
 #include "SceneManager.h"
 
+#include "session.h"
+
 TestCameraScript::TestCameraScript()
 {
 }
@@ -65,6 +67,14 @@ void TestCameraScript::LateUpdate()
 		GET_SINGLE(SceneManager)->Pick(pos.x, pos.y);
 	}
 
+	cs_packet_pos_info packet;
+	packet.size = sizeof(cs_packet_pos_info);
+	packet.type = CS_POS_INFO;
+	packet.x = pos.x;
+	packet.y = pos.y;
+	packet.z = pos.z;
+
+	session->Send_Packet(&packet);
 
 	GetTransform()->SetLocalPosition(pos);
 }

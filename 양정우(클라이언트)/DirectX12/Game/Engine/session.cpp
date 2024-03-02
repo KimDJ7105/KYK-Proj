@@ -19,7 +19,7 @@ void SESSION::Process_Packet(unsigned char* packet)
 		int object_id = p->id;
 		float x = p->x;
 		float y = p->y;
-		float z = 0;
+		float z = p->z;
 		int animation_id = 0;
 		float direction = 0;
 		//game->CreateAvatar(object_type, object_id, x, y, z, animation_id, direction);
@@ -32,7 +32,7 @@ void SESSION::Process_Packet(unsigned char* packet)
 		int object_id = p->id;
 		float x = p->x;
 		float y = p->y;
-		float z = 0;
+		float z = p->z;
 		int animation_id = 0;
 		float direction = 0;
 		//game->CreateObject(object_type, object_id, x, y, z, animation_id, direction);
@@ -44,7 +44,7 @@ void SESSION::Process_Packet(unsigned char* packet)
 		int object_id = p->id;
 		float x = p->x;
 		float y = p->y;
-		float z = 0;		// sock log info에 z에 해당하는 것이 없어 0으로 하였음
+		float z = p->z;		// sock log info에 z에 해당하는 것이 없어 0으로 하였음
 		float direction = 0;
 		//game->ChangeObjectLocation(object_id, x, y, z, direction);
 		break;
@@ -139,3 +139,5 @@ void MoveSession(tcp::socket& sock)
 {
 	session = new SESSION(std::move(sock));
 }
+
+SESSION* GetSession() { return session; }

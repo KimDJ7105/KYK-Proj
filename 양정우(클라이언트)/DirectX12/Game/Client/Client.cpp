@@ -10,8 +10,6 @@
 class Game;
 Game* _game;
 
-class SESSION;
-
 // 윈도우 실행시 어떤식으로 동작할지
 enum
 {

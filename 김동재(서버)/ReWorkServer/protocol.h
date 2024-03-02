@@ -15,7 +15,7 @@
 #define MY_SERVER_PORT  "4000"
 #define MY_PORT 4000
 
-#define CS_KEY_INFO 1
+#define CS_POS_INFO 1
 
 #define SC_POS           1
 #define SC_PUT_PLAYER    2
@@ -25,10 +25,14 @@
 
 #pragma pack (push, 1)
 
-struct cs_packet_key_info {
+//---------Client to Server-----------------
+
+struct cs_packet_pos_info {
 	BYTE size;
 	BYTE type;
-	DWORD key_info;
+	float x;
+	float y;
+	float z;
 };
 
 struct cs_packet_logout {
@@ -36,28 +40,33 @@ struct cs_packet_logout {
 	BYTE type;
 };
 
+//---------Server To Client-----------------
+
 struct sc_packet_pos {
 	BYTE size;
 	BYTE type;
 	WORD id;
-	WORD x;
-	WORD y;
+	float x;
+	float y;
+	float z;
 };
 
 struct sc_packet_put {
 	BYTE size;
 	BYTE type;
 	WORD id;
-	WORD x;
-	WORD y;
+	float x;
+	float y;
+	float z;
 };
 
 struct sc_packet_login_info {
 	BYTE size;
 	BYTE type;
 	WORD id;
-	WORD x;
-	WORD y;
+	float x;
+	float y;
+	float z;
 };
 
 struct sc_packet_remove_player {
