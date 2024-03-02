@@ -42,5 +42,10 @@ private:
 	shared_ptr<GameObject> _player;
 	std::vector<shared_ptr<GameObject>> _otherPlayer;
 	// TODO: bool 무언가 플레이어가 입장했음을 알수있는 판단변수
+
+public:
+	void CreateAvatar();
+	void CreateObject();
+	void ChangeObjectLocation();
 };
 

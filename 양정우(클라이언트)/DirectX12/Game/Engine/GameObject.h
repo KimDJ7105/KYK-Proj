@@ -59,7 +59,7 @@ private:
 	std::array<shared_ptr<Component>, FIXED_COMPONENT_COUNT> _components;
 	std::vector<shared_ptr<MonoBehaviour>> _scripts;
 
-	bool _chechFrustum = true;
+	bool _chechFrustum = true; // 디폴트로 프러스텀 컬링판단을 한다.
 	uint8 _layerIndex = 0;
 	bool _static = true;
 

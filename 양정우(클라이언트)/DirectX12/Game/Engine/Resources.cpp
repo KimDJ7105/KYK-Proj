@@ -359,7 +359,7 @@ void Resources::CreateDefaultShader()
 	{
 		ShaderInfo info =
 		{
-			SHADER_TYPE::DEFERRED
+			SHADER_TYPE::DEFERRED,
 		};
 		shared_ptr<Shader> shader = make_shared<Shader>();
 		shader->CreateGraphicsShader(L"..\\Resources\\Shader\\deferred.hlsl", info);
