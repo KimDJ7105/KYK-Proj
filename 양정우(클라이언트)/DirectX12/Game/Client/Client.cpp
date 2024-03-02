@@ -3,8 +3,14 @@
 #include "pch.h"
 #include "Client.h"
 #include "Game.h"
+#include "session.h"
 
 #define MAX_LOADSTRING 100
+
+class Game;
+Game* _game;
+
+class SESSION;
 
 // 윈도우 실행시 어떤식으로 동작할지
 enum
@@ -60,9 +66,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     tcp::socket sock(io_con);
 
-    MoveSession(sock);
+    _game->MoveSession(sock);
 
-    session->do_connect(endpoint);
+    _game->GetSession()->do_connect(endpoint);
 
     std::thread serverthread(workerthread, &io_con);
     //-----------------------------------------------------------------

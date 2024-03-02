@@ -29,3 +29,5 @@ public:
 void MoveSession(tcp::socket& sock);
 
 extern SESSION* session;
+
+SESSION* GetSession() { return session; }

@@ -2,7 +2,7 @@
 #include "Game.h"
 #include "Engine.h"
 #include "SceneManager.h"
-
+#include "session.h"
 
 void Game::Init(const WindowInfo& info)
 {
@@ -29,4 +29,14 @@ void Game::CreateObject(int object_type, int object_id, float x, float y, float 
 void Game::ChangeObjectLocation(int object_id, float x, float y, float z, float direction)
 {
 	GET_SINGLE(SceneManager)->ChangeObjectLocation(object_id, x, y, z, direction);
+}
+
+void Game::MoveSession(tcp::socket& sock)
+{
+	MoveSession(sock);
+}
+
+SESSION* Game::GetSession()
+{
+	GetSession();
 }
