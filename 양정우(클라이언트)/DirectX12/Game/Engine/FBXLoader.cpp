@@ -488,8 +488,8 @@ void FBXLoader::LoadOffsetMatrix(FbxCluster* cluster, const FbxAMatrix& matNodeT
 	cluster->GetTransformLinkMatrix(matClusterLinkTrans);
 
 	FbxVector4 V0 = { 1, 0, 0, 0 };
-	FbxVector4 V1 = { 0, 0, 1, 0 };
-	FbxVector4 V2 = { 0, 1, 0, 0 };
+	FbxVector4 V1 = { 0, 1, 0, 0 };
+	FbxVector4 V2 = { 0, 0, 1, 0 };
 	FbxVector4 V3 = { 0, 0, 0, 1 };
 
 	FbxAMatrix matReflect;
@@ -511,8 +511,8 @@ void FBXLoader::LoadKeyframe(int32 animIndex, FbxNode* node, FbxCluster* cluster
 		return;
 
 	FbxVector4	v1 = { 1, 0, 0, 0 };
-	FbxVector4	v2 = { 0, 0, 1, 0 };
-	FbxVector4	v3 = { 0, 1, 0, 0 };
+	FbxVector4	v2 = { 0, 1, 0, 0 };
+	FbxVector4	v3 = { 0, 0, 1, 0 };
 	FbxVector4	v4 = { 0, 0, 0, 1 };
 	FbxAMatrix	matReflect;
 	matReflect.mData[0] = v1;

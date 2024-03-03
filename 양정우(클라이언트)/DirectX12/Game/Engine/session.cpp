@@ -1,6 +1,10 @@
 #pragma once
 #include "pch.h"
 #include "session.h"
+#include "SceneManager.h"
+
+class SceneManager;
+SceneManager* _sceneManager;
 
 SESSION::SESSION(tcp::socket socket_) : sock(std::move(socket_))
 {
@@ -22,7 +26,7 @@ void SESSION::Process_Packet(unsigned char* packet)
 		float z = p->z;
 		int animation_id = 0;
 		float direction = 0;
-		//game->CreateAvatar(object_type, object_id, x, y, z, animation_id, direction);
+		_sceneManager->CreateAvatar(object_type, object_id, x, y, z, animation_id, direction);
 		break;
 	}
 	case SC_PUT_PLAYER:
@@ -35,7 +39,7 @@ void SESSION::Process_Packet(unsigned char* packet)
 		float z = p->z;
 		int animation_id = 0;
 		float direction = 0;
-		//game->CreateObject(object_type, object_id, x, y, z, animation_id, direction);
+		_sceneManager->CreateObject(object_type, object_id, x, y, z, animation_id, direction);
 		break;
 	}
 	case SC_POS:
@@ -46,7 +50,7 @@ void SESSION::Process_Packet(unsigned char* packet)
 		float y = p->y;
 		float z = p->z;		// sock log info에 z에 해당하는 것이 없어 0으로 하였음
 		float direction = 0;
-		//game->ChangeObjectLocation(object_id, x, y, z, direction);
+		_sceneManager->ChangeObjectLocation(object_id, x, y, z, direction);
 		break;
 	}
 	default: // 지정되지 않은 패킷을 수신받았을 때
