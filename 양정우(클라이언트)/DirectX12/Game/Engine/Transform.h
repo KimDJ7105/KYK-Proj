@@ -2,6 +2,8 @@
 #include "Component.h"
 
 using std::weak_ptr;
+using std::min;
+using std::max;
 
 class Transform : public Component
 {
@@ -33,6 +35,12 @@ public:
 	void SetLocalRotation(const Vec3& rotation) { _localRotation = rotation; }
 	void SetLocalScale(const Vec3& scale) { _localScale = scale; }
 
+	void LookAt(const Vec3& dir);
+
+	static bool CloseEnough(const float& a, const float& b, const float& epsilon = std::numeric_limits<float>::epsilon());
+	static Vec3 DecomposeRotationMatrix(const Matrix& rotation);
+
+
 public:
 	void SetParent(shared_ptr<Transform> parent) { _parent = parent; }
 	weak_ptr<Transform> GetParent() { return _parent; }
@@ -47,5 +55,15 @@ private:
 	Matrix _matWorld = {};	// 계산한 월드변환행렬을 저장하기 위한 용도
 
 	weak_ptr<Transform> _parent;
+
+public:
+	void SetObjectID(int objectID) { _objectID = objectID; }
+	int GetObjectID() { return _objectID; }
+	void SetObjectType(int objectType) { _objectType = objectType; }
+	int GetObjectType() { return _objectType; }
+
+private:
+	int _objectID;
+	int _objectType;	//0 = player, 1 = otherplayer, 2 = mapObject
 };
 

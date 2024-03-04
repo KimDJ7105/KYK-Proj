@@ -5,6 +5,9 @@
 #include "GameObject.h"
 #include "Input.h"
 #include "Timer.h"
+#include "SceneManager.h"
+
+#include "session.h"
 
 TestCameraScript::TestCameraScript()
 {
@@ -33,30 +36,45 @@ void TestCameraScript::LateUpdate()
 	if (INPUT->GetButton(KEY_TYPE::Q))
 	{
 		Vec3 rotation = GetTransform()->GetLocalRotation();
-		rotation.x += DELTA_TIME * 0.5f;
+		rotation.x += DELTA_TIME * 3.5f;
 		GetTransform()->SetLocalRotation(rotation);
 	}
 
 	if (INPUT->GetButton(KEY_TYPE::E))
 	{
 		Vec3 rotation = GetTransform()->GetLocalRotation();
-		rotation.x -= DELTA_TIME * 0.5f;
+		rotation.x -= DELTA_TIME * 3.5f;
 		GetTransform()->SetLocalRotation(rotation);
 	}
 
 	if (INPUT->GetButton(KEY_TYPE::C))
 	{
 		Vec3 rotation = GetTransform()->GetLocalRotation();
-		rotation.y += DELTA_TIME * 0.5f;
+		rotation.y += DELTA_TIME * 3.5f;
 		GetTransform()->SetLocalRotation(rotation);
 	}
 
 	if (INPUT->GetButton(KEY_TYPE::Z))
 	{
 		Vec3 rotation = GetTransform()->GetLocalRotation();
-		rotation.y -= DELTA_TIME * 0.5f;
+		rotation.y -= DELTA_TIME * 3.5f;
 		GetTransform()->SetLocalRotation(rotation);
 	}
+
+	if (INPUT->GetButtonDown(KEY_TYPE::RBUTTON))
+	{
+		const POINT& pos = INPUT->GetMousePos();
+		GET_SINGLE(SceneManager)->Pick(pos.x, pos.y);
+	}
+
+	cs_packet_pos_info packet;
+	packet.size = sizeof(cs_packet_pos_info);
+	packet.type = CS_POS_INFO;
+	packet.x = pos.x;
+	packet.y = pos.y;
+	packet.z = pos.z;
+
+	session->Send_Packet(&packet);
 
 	GetTransform()->SetLocalPosition(pos);
 }

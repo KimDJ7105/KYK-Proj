@@ -6,8 +6,6 @@
 const auto X_START_POS = 4;
 const auto Y_START_POS = 4;
 
-class session;
-
 void Init_Server()
 {
 	_wsetlocale(LC_ALL, L"korean");

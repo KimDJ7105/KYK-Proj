@@ -13,8 +13,20 @@ public:
 	void Update();
 	void LateUpdate();
 	void FinalUpdate();
+	
+	shared_ptr<class Camera> GetMainCamera();
 
 	void Render();
+
+	void ClearRTV();
+
+	// 순서 중요
+	void RenderShadow();
+	void RenderDeferred();
+	void RenderLights();
+	void RenderFinal();
+
+	void RenderForward();
 
 private:
 	void PushLightData();
@@ -26,7 +38,8 @@ public:
 	const vector <shared_ptr<GameObject>>& GetGameObjects() { return _gameObjects; }
 
 private:
-	vector<shared_ptr<GameObject>> _gameObjects;
-	//이후 벡터의 배열은 추가될 예정이다.
+	vector<shared_ptr<GameObject>>		_gameObjects;
+	vector<shared_ptr<class Camera>>	_cameras;
+	vector<shared_ptr<class Light>>		_lights;
 };
 

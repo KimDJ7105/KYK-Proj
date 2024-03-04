@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Component.h"
 #include "GameObject.h"
+#include "MeshRenderer.h"
+#include "Animator.h"
 
 using std::shared_ptr;
 
@@ -20,4 +22,14 @@ shared_ptr<GameObject> Component::GetGameObject()
 shared_ptr<Transform> Component::GetTransform()
 {
 	return _gameObject.lock()->GetTransform();
+}
+
+shared_ptr<MeshRenderer> Component::GetMeshRenderer()
+{
+	return _gameObject.lock()->GetMeshRenderer();
+}
+
+shared_ptr<Animator> Component::GetAnimator()
+{
+	return _gameObject.lock()->GetAnimator();
 }

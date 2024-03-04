@@ -3,10 +3,20 @@
 #include "pch.h"
 #include "Client.h"
 #include "Game.h"
-
 #include "session.h"
 
 #define MAX_LOADSTRING 100
+
+class Game;
+Game* _game;
+
+// 윈도우 실행시 어떤식으로 동작할지
+enum
+{
+    WINDOW_WIDTH = 800,
+    WINDOW_HEIGHT = 600,
+    IS_WINDOW_MODE = true
+};
 
 // 전역 변수:
 WindowInfo GWindowInfo;
@@ -54,9 +64,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     tcp::socket sock(io_con);
 
-    MoveSession(sock);
+    _game->MoveThisSession(sock);
 
-    session->do_connect(endpoint);
+    _game->GetGameSession()->do_connect(endpoint);
 
     std::thread serverthread(workerthread, &io_con);
     //-----------------------------------------------------------------
